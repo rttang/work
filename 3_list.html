@@ -1,0 +1,741 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>央视点播</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+     <link id="tipWindow" type="text/css" rel="stylesheet" href="css/tipWindow.css" />
+    <link href="./css/index_3.css" rel="stylesheet">
+</head>
+
+<body>
+    <div id="buy_layout" style="display: none;">
+        <h3 style="color:red;">系统错误未获取账户余额。</h3>
+        <ul id="buyChose">
+            <li><span class="old">余额购买1个月<span class="linethrough">（16元）</span></span><span class="new">限时促销:12元</span></li>
+            <li><span class="old">微信购买1个月<span class="linethrough">（16元）</span></span><span class="new">限时促销:12元</span></li>
+            <li><span class="old">余额购买3个月<span class="linethrough">（42元）</span></span><span class="new">限时促销:32元</span></li>
+            <li><span class="old">微信购买3个月<span class="linethrough">（42元）</span></span><span class="new">限时促销:32元</span></li>
+             <li><span class="old">余额购买12个月<span class="linethrough">（99元）</span></span><span class="new">限时促销:75元</span></li>
+            <li><span class="old">微信购买12个月<span class="linethrough">（99元）</span></span><span class="new">限时促销:75元</span></li>
+            <li id="last">暂不购买</li>
+        </ul>
+        <p id=buyConfirmText class="showHidden">请您确定订购数量：</p>
+        <ul id="buyConfirm" class="showHidden">
+            <li>确认</li>
+            <li>取消</li>
+        </ul>
+    </div>
+    <img id="i_0" src="./img/index_jiaobiao_gaoqing.png" class="jiaobiao" />
+    <img id="g_0" src="./img/index_jiaobiao_new.png" class="jiaobiao" />
+    <div id="content_left">
+        <ul>
+            <li id="titleFull"></li>
+            <li id="zhuyan_all"><span class="redtitle">主演：</span>&nbsp;<span id="zhuyan"></span></li>
+            <li id="daoyan_all">
+                <sapn class="redtitle">导演：</sapn>&nbsp;<span id="daoyan"></span></li>
+            <li class="many_summary" id="summary"></li>
+            <div id='many_cang' class="the_button"></div>
+            </li>
+        </ul>
+        <img id="poster" src="./images/u202.png" alt="">
+    </div>
+    <div id="content_right">
+        <div id="page"><span id="page_now" class="page_now">1</span><img src="./img/2_page.png"><span id="page_all" class="page_all">5</span></div>
+        <div id="list_list">
+            <ul>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+            </ul>
+        </div>
+    </div>
+    <div id="dataJson"></div>
+    <div id="tip_visibility" class="tip_visibility">
+        <div class="cover"></div>
+        <div class="tip_window" id="tip_window"></div>
+    </div>
+    <script src="./common/js/global.js"></script>
+    <script src="./common/js/commonAPI.js"></script>
+    <script src="./common/js/order.js"></script>
+</body>
+<script>
+//var userId ="8851003273568946"
+var isAccessOrder = null;
+var folderContentsOrder;
+var folderAssetId = getQueryStr(location.href, "folderAssetId");
+var providerId = getQueryStr(location.href, "providerId");
+var assetId = getQueryStr(location.href, "assetId");
+var wayback = getQueryStr(location.href, "wayback");
+var listData = [],
+    curData = [],
+    chargeMode;
+goUrl = "http://10.2.4.60:8080";
+var curPage = 1,
+    totalPage = 1,
+    serviceId = '';
+var hasBookmark = "N",
+    resumePoint = 0,
+    bookNumFocus = 0,
+    mediaFocus = 0;
+var isCollected = false; //是否收藏过
+
+window.onload = function() {
+    getAssetDetail();
+    if(folderAssetId =='MANU0000000000233066')
+        authentication("MANU233066");
+    else
+        authentication("MANU228065");
+    queryBalance();
+
+    if (getGlobalVar("isBack") == "Y") {
+        op.getGlobals();
+        op.clearGlobals();
+        showAssetDetail();
+    }
+}
+function getPrevPath() { //从机顶盒变量或浏览器cookie中获取前一路径，前一页面需要saveUrlPath
+    var tempUrl = getGlobalVar(urlPathGlobalName);
+    if (tempUrl == undefined || tempUrl == "") return "";
+    var tuArr = tempUrl.split(urlSplitChar);
+    var tl = tuArr.length;
+    var tul = tuArr.pop();
+    if (tul.split("?")[0] == location.href.split("?")[0]) {
+        tul = tuArr.pop();
+    }
+    return tul;
+};
+function doReturnKey() {
+   var result = getPrevPath();
+   //console.log(result);
+    if(result.indexOf('cctv')==-1){
+        if(!wayback)
+        window.location.href ="index.html";
+        else doEvent.back();
+
+    }else{
+        doEvent.back();
+    }
+}
+function getAssetDetail() {
+    var VOD_getAssetDetail = { //媒资详情
+        'data': '<GetFolderContents folderAssetId="' + folderAssetId + '" titleProviderId="' + providerId + '" assetId="' + assetId + '" portalId="' + portalId + '" client="' + cardId + '" account="' + userId + '" startAt ="1" maxItems=\"999\" includeFolderProperties="Y" includeSubFolder="Y" includeSelectableItem="Y"/>',
+        "callBack": getAsset
+    };
+    IEPG.getData(URL.VOD_getAssetList, VOD_getAssetDetail);
+}
+
+function checkBookmarkDetail() { //检查书签
+    var VOD_checkBookmark = {
+        'data': '<CheckSavedProgram  folderAssetId="' + assetId + '" portalId="' + portalId + '" client="' + cardId + '" account="' + userId + '"/>',
+        "callBack": checkBookmark
+    }
+    IEPG.getData(URL.VOD_checkBookmark, VOD_checkBookmark)
+}
+
+function checkBookmark(_dataJson) {
+    showAssetDetail();
+    op.setFocus();
+}
+
+function getBookmarksDetail() { //获取收藏
+    var VOD_getBookmarks = {
+        'data': '<GetBookmarks startAt="1" maxItems="999" portalId="' + portalId + '" client="' + cardId + '" account="' + userId + '" custom="VODPkg" />',
+        'callBack': getBookmarks
+    }
+    IEPG.getData(URL.VOD_getSavedProgram, VOD_getBookmarks);
+}
+
+function getBookmarks(dataJson) {
+    var reg = /([A-Z]{4})([0-9]+)/;
+    var rel =reg.exec(folderAssetId);
+    var newFolderAssetId='';
+    if(folderAssetId !='MANU0000000000228065'){
+        newFolderAssetId = rel[1] +'0000000000'+rel[2];
+    }else {
+        newFolderAssetId = folderAssetId;
+    }
+    if (dataJson.totalResults != 0) {
+        for (var i = 0; i < dataJson.bookmarkedItem.length; i++) {
+            console.log([dataJson.bookmarkedItem[i].selectableItem[0].assetId,dataJson.bookmarkedItem[i].selectableItem[0].folderAssetId])
+            if (dataJson.bookmarkedItem[i].selectableItem[0].assetId == assetId && dataJson.bookmarkedItem[i].selectableItem[0].folderAssetId == newFolderAssetId) {
+                isCollected = true;
+                break;
+            } else {
+                isCollected = false;
+            }
+        }
+    } else {
+        isCollected = false;
+    }
+    showBookmarks();
+}
+
+function showBookmarks() {
+    console.log('isCollected:',isCollected);
+    if (isCollected) {
+        //$("red").style.display = "block";
+        $("many_cang").innerHTML = "已 收 藏"
+    } else {
+        $("many_cang").innerHTML = "收 藏"
+            //$("red").style.display = "none";
+    }
+}
+
+function addBookmarksDetail() { //加入收藏
+    console.log('folderAssetId:', folderAssetId);
+    var VOD_addBookmarks = {
+        'data': '<AddBookmark titleAssetId="' + assetId + '"  folderAssetId="' + folderAssetId + '" custom="VODPkg" portalId="' + portalId + '" client="' + cardId + '" account="' + userId + '"/>',
+        'callBack': addBookmarks
+    }
+    IEPG.getData(URL.VOD_addSavedProgram, VOD_addBookmarks);
+}
+
+function addBookmarks(dataJson) {
+    console.log('dataJson:',dataJson);
+    if (dataJson.code) {
+        showMsg(tipUrl + "iPG/tip/a_errorTip.htm", dataJson.message);
+    } else {
+        //$("red").style.display = "block";
+        getBookmarksDetail();
+    }
+}
+
+function deleteBookmarksDetail() { //删除收藏
+    var VOD_deleteBookmarks = {
+        'data': '<DeleteBookmark titleAssetId="' + assetId + '" custom="VODPkg" portalId="' + portalId + '" client="' + cardId + '" account="' + userId + '"/>',
+        'callBack': deleteBookmarks
+    }
+    IEPG.getData(URL.VOD_removeVodFavorites, VOD_deleteBookmarks);
+}
+
+function deleteBookmarks(dataJson) {
+    if (dataJson.code == 0) {
+        //$("red").style.display = "none";
+        getBookmarksDetail();
+    } else {
+        showMsg(tipUrl + "iPG/tip/a_errorTip.htm", dataJson.message);
+    }
+}
+
+function getAsset(dataJson) {
+    //document.getElementById('dataJson').innerHTML=JSON.stringify(dataJson.folderFrame.serviceId);
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    chargeMode = dataJson.folderFrame.chargeMode
+    listData = dataJson.selectableItemList;
+    serviceId = dataJson.folderFrame.serviceId;
+    totalPage = Math.ceil(listData.length / op.size);
+    $("titleFull").innerHTML = dataJson.folderFrame.displayName;
+    var html = "";
+    if (dataJson.folderFrame.folderDetails.director.length != 0) {
+        html = dataJson.folderFrame.folderDetails.director[0].name;
+        for (var i = 1; i < dataJson.folderFrame.folderDetails.director.length; i++) {
+            html += (" " + dataJson.folderFrame.folderDetails.director[i].name);
+        }
+    }
+    if (html == "导演" || html == '') {
+        $("daoyan_all").style.display = 'none';
+    }
+    $("daoyan").innerHTML = html;
+    //$("area").innerHTML = dataJson.folderFrame.folderDetails.area;
+    if (dataJson.folderFrame.folderDetails.actorsDisplay == '主演' || dataJson.folderFrame.folderDetails.actorsDisplay == '') {
+        $("zhuyan_all").style.display = 'none';
+    }
+    $("zhuyan").innerHTML = dataJson.folderFrame.folderDetails.actorsDisplay;
+    $("summary").innerHTML = IEPG.subText(dataJson.folderFrame.folderDetails.summarMedium, 260, 0);
+    $("poster").src = gPoster(dataJson.folderFrame.imageList, 288, 383);
+    //增加角标
+    if (dataJson.folderFrame.folderDetails.displayFlags == "N") {
+        $("g_0").setAttribute('style', 'top:' + ($("poster").offsetTop - 7) + 'px;left:' + ($("poster").offsetLeft - 9) + 'px;display:block;');
+    } else if (dataJson.folderFrame.folderDetails.videoType == 1) {
+        $("i_0").setAttribute('style', 'top:' + ($("poster").offsetTop - 7) + 'px;left:' + ($("poster").offsetLeft - 9) + 'px;display:block;');
+    }
+
+    //$("dt").style.display = "block"
+    //$("num").getElementsByTagName("span")[0].innerHTML = ""
+    //$("num").style.display = "block"
+    getBookmarksDetail();
+    checkBookmarkDetail();
+}
+
+
+function showAssetDetail() {
+    var start = (curPage - 1) * op.size;
+    var end = (start + op.size) > listData.length ? listData.length : (start + op.size);
+    $("page_now").innerHTML = curPage;
+    $("page_all").innerHTML = totalPage
+    curData = [];
+    for (var i = start; i < end; i++) {
+        curData.push(listData[i]);
+    }
+    for (var i = 0; i < op.size; i++) {
+        if (curData[i]) {
+            op.getListLis()[i].style.display = "block";
+            op.getListLis()[i].innerHTML = curData[i].titleFull;
+        } else {
+            op.getListLis()[i].style.display = "none";
+        }
+    }
+    op.curDataSize = curData.length;
+}
+
+function authentication(columnId) { //鉴权
+    var VOD_getFolderContents = {
+        "data": '<GetFolderContents  mergeTV="1" assetId="' + columnId + '" portalId="' + portalId + '" account="' + userId + '" client="' + cardId + '" includeFolderProperties="Y" includeSubFolder="Y" includeSelectableItem="Y" maxItems="10" startAt="1" />',
+        "callBack": callBackAuthentication
+    };
+    IEPG.getData(URL.VOD_getAssetList, VOD_getFolderContents);
+}
+
+function callBackAuthentication(dataJson) {
+    folderContentsOrder = dataJson;
+    var serviceIdOrder = dataJson.folderFrame.serviceId;
+    var assetIdOrder = dataJson.selectableItemList[0].assetId;
+    var providerIdOrder = dataJson.selectableItemList[0].providerId;
+    var VOD_checkBuy = {
+        "data": "<ValidatePlayEligibility providerId=\"" + providerIdOrder + "\"  assetId=\"" + assetIdOrder + "\" portalId=\"" + portalId + "\" client=\"" + cardId + "\" account=\"" + userId + "\"/>",
+        "callBack": checkBuyOrder
+    };
+    IEPG.getData(URL.VOD_checkBuy, VOD_checkBuy);
+}
+
+function checkBuyOrder(dataJson) {
+    if (dataJson.orderFlag == "N") {
+        isAccessOrder = false;
+    } else {
+        isAccessOrder = true;
+    }
+    //alert(isAccessOrder);
+}
+
+
+function queryBalance() { //查询余额
+    var bossNetwork = "http://10.68.1.17:8180";
+    ajaxUrl(
+        bossNetwork + "/UAP/UAPJAction.do?METHOD=uniForward&opcode=Z02&syscode=DCYDB001&sm_no=" + cardId,
+        callBackQueryBalance,
+        null
+    );
+}
+
+function callBackQueryBalance(dataJson) {
+    var balanceOrder = 0;
+    if (dataJson.status == "0000") {
+        balanceOrder = dataJson.ouput.cashbox;
+    } else {
+        balanceOrder = 0;
+    }
+    $("buy_layout").getElementsByTagName("h3")[0].innerHTML = "账户余额为" + balanceOrder + "元,余额不足时直接跳转微信支付";
+}
+
+
+
+function vodPlay(num) { //播放
+    numFocus = num;
+    mediaFocus = (parseInt(num) + parseInt((curPage - 1) * 6)); //根据所传值判断当前下标
+    if (mediaFocus < listData.length - 1) {
+        setGlobalToPlayNext();
+    }
+
+    var data = listData[mediaFocus];
+    data.folderAssetId = assetId;
+    if (data.chargeMode == "") {
+        data.chargeMode = chargeMode;
+    }
+    if (data.serviceId == "") {
+        //data.serviceId = data.goodsId;
+        data.resourceId = data.folderAssetId;
+        if (data.chargeMode == 1) {
+            data.pkgChargeMode = "1";
+        }
+    }
+
+    //$("dataJson").innerHTML=JSON.stringify(data);
+
+    IEPG.doPlayAction(data);
+}
+
+function setGlobalToPlayNext() {
+    setGlobalVar("playType", "pakg"); // 电视剧续播标识
+    setGlobalVar("mediaFocus", mediaFocus); //保存当前播放章节数
+    setGlobalVar("pakgId", assetId); //保存当前资源包的id，用于电视剧播放下一集
+}
+
+function playLast() { //续看
+    var playJson = listData[bookNumFocus];
+    playJson.buyPlayType = "1";
+    playJson.singleFlag = "true";
+    playJson.resumePoint = resumePoint;
+    IEPG.doPlayAction(playJson);
+}
+var op = {
+    area: 1, // 0:功能按键;   1:列表选集;
+    focusIndex: 0,
+    listIndex: 0,
+    size: 　6,
+    buyStep: 0,
+    buyButtonIndex: 0,
+    btnConfirm:0,
+    btnConfirmBtn:1,
+    getListLis: function() {
+        return $("list_list").getElementsByTagName("li");
+    },
+    moveRight: function() {
+        if (op.buyStep == 1) {
+            console.log(op.buyButtonIndex)
+            op.buyButtonIndex == 6 ? op.buyButtonIndex = 0 : op.buyButtonIndex += 1;
+            op.setFocus();
+        } else if(op.btnConfirm ==1){
+            op.btnConfirmBtn = 1 ;
+            op.setFocus();
+        }else{
+            if (op.area == 1 && totalPage != 1) {
+                if (curPage == totalPage) {
+                    curPage = 1;
+                } else {
+                    curPage++;
+                }
+                op.focusIndex = 0;
+                showAssetDetail();
+            }
+            op.setFocus();
+        }
+    },
+    moveLeft: function() {
+        if (op.buyStep == 1) {
+            console.log(op.buyButtonIndex)
+            op.buyButtonIndex == 0 ? op.buyButtonIndex = 6 : op.buyButtonIndex -= 1;
+            op.setFocus();
+        } else if(op.btnConfirm ==1){
+            op.btnConfirmBtn = 0 ;
+            op.setFocus();
+        }else {
+            if (op.area == 1 && totalPage != 1) {
+                if (curPage == 1) {
+                    curPage = totalPage;
+                } else {
+                    curPage--;
+                }
+                op.focusIndex = 0;
+                showAssetDetail();
+            }
+            op.setFocus();
+        }
+    },
+    moveUp: function() {
+        if (op.buyStep == 1) {
+            console.log(op.buyButtonIndex)
+            switch (op.buyButtonIndex) {
+                case 0:
+                    op.buyButtonIndex = 6;
+                    break;
+                case 1:
+                    op.buyButtonIndex = 1;
+                    break;
+                case 2:
+                    op.buyButtonIndex = 0;
+                    break;
+                case 3:
+                    op.buyButtonIndex = 1;
+                    break;
+                case 4:
+                    op.buyButtonIndex = 2;
+                    break;
+                case 5:
+                    op.buyButtonIndex = 3;
+                    break;
+                case 6:
+                    op.buyButtonIndex = 4;
+                    break;
+            }
+            op.setFocus();
+        } else {
+            if (op.area == 1) {
+                if (op.focusIndex == 0) {
+                    op.area = 0;
+                    op.focusIndex = 0;
+                } else {
+                    op.focusIndex--;
+                }
+            }
+            op.setFocus();
+        }
+    },
+    moveDown: function() {
+        if (op.buyStep == 1) {
+            console.log(op.buyButtonIndex)
+            switch (op.buyButtonIndex) {
+                case 0:
+                    op.buyButtonIndex = 2; break;
+                case 1:
+                    op.buyButtonIndex = 3; break;
+                case 2:
+                    op.buyButtonIndex = 4; break;
+                case 3:
+                    op.buyButtonIndex = 5; break;
+                case 4:
+                    op.buyButtonIndex = 6; break;
+                case 5:
+                    op.buyButtonIndex = 5; break;
+                case 6:
+                    op.buyButtonIndex = 6; break;
+            }
+            op.setFocus();
+        } else {
+            if (op.area == 0) {
+                op.area = 1;
+                op.focusIndex = 0;
+            } else {
+                if (op.focusIndex == op.size - 1 || op.focusIndex == op.curDataSize - 1) {
+                    if (curPage == totalPage) {
+                        curPage = 1;
+                    } else {
+                        curPage++;
+                    }
+                    op.focusIndex = 0;
+                    showAssetDetail();
+                } else {
+                    op.focusIndex++
+                }
+            }
+            op.setFocus();
+        }
+    },
+    reFreshBuy: function(num) {
+        o.init({
+            columnId: "MANU228065", 
+            count: num
+        });
+        // saveUrlPath();
+        // window.location.href = "./common/js/zf/index.html?productName="+folderContentsOrder.folderFrame.displayName+"&serviceId="+folderContentsOrder.folderFrame.serviceId+"&count="+num;
+    },
+    gotoWeixin: function(num) {
+        saveUrlPath();
+        window.location.href = "./common/js/zf/index.html?productName=" + folderContentsOrder.folderFrame.displayName + "&serviceId=" + folderContentsOrder.folderFrame.serviceId + "&count=" + num;
+    },
+    doConfirm: function() {
+        //saveUrlPath();
+        op.saveGlobals();
+        if (op.buyStep == 1) {
+            
+            if (op.buyButtonIndex == 6) {
+                op.buyStep = 0;
+                op.buyButtonIndex = 0;
+                $("buy_layout").setAttribute("style", "display:none;");
+            } else {
+
+            $('buyChose').setAttribute('class', 'showHidden');
+            $('buyConfirm').setAttribute('class', '');
+            $('buyConfirmText').setAttribute('class', '');
+            $('buyConfirm').getElementsByTagName('li')[1].setAttribute('class', 'buy_active');
+            switch (op.buyButtonIndex) {
+                case 0:
+
+                case 1:
+                    buyTime = '一个月';
+                    break;
+                case 2:
+
+                case 3:
+                    buyTime = '一个季度';
+                    break;
+                case 4:
+
+                case 5:
+                    buyTime = '一年';
+
+                    break;
+            }
+            $('buyConfirmText').innerHTML = '请您确定订购数量：' + buyTime;
+                op.buyStep = 0;
+                op.btnConfirm =1;
+                op.setFocus();
+            }
+        } else if(op.btnConfirm ==1){
+            if(op.btnConfirmBtn == 1){
+                op.buyStep = 0;
+                op.buyButtonIndex = 0;
+                op.btnConfirm = 0;
+            $('buyChose').setAttribute('class', '');
+            $('buyConfirm').setAttribute('class', 'showHidden');
+            $('buyConfirmText').setAttribute('class', 'showHidden');
+            $("buy_layout").setAttribute("style", "display:none;");
+            } else {
+                console.log(op.buyButtonIndex);
+                switch (op.buyButtonIndex) {
+                case 0:
+                    op.reFreshBuy(1);
+                    break;
+                case 1:
+                    op.gotoWeixin(1);
+                    break;
+                case 2:
+                    op.reFreshBuy(3);
+                    break;
+                case 3:
+                    op.gotoWeixin(3);
+                    break;
+                case 4:
+                    op.reFreshBuy(12);
+                    break;
+                case 5:
+                    op.gotoWeixin(12);
+                    break;
+                default:
+                    showMsg("", "系统错误，请营业厅购买");
+                    break;
+            }
+            op.buyStep = 0;
+            op.buyButtonIndex = 0;
+            op.btnConfirm = 0;
+             $('buyChose').setAttribute('class', '');
+            $('buyConfirm').setAttribute('class', 'showHidden');
+            $('buyConfirmText').setAttribute('class', 'showHidden');
+            $("buy_layout").setAttribute("style", "display:none;");
+        }
+        } else {
+            if (op.area == 0) {
+                if (isCollected) {
+                    deleteBookmarksDetail();
+                    //op.showTip();
+                    //$("info").style.background = "url(images/cancel.png) no-repeat";
+                    //$("info").innerHTML = "已收藏";
+                } else {
+                    addBookmarksDetail();
+                    //op.showTip();
+                    //$("info").style.background = "url(images/success.png) no-repeat";
+                    //$("info").innerHTML = "收藏";
+                }
+            } else {
+                if (isAccessOrder) {
+                    //alert("购买成功");
+                    vodPlay(op.focusIndex);
+                } else {
+                    //showMsg("","您没有订购此款产品！");
+                    
+                   $("buy_layout").setAttribute("style", "display:block;")
+                       // $("buy_layout").getElementsByTagName("h3")[0].innerHTML="账户余额为"+o.balance+"元，专区包月价格为"+o.price+"元";
+                    op.buyStep = 1;
+                    op.buyButtonIndex = 0; //焦点移动到订购页面
+                    op.setFocus();
+                }
+                //提示微信购买还是智能卡直接购买
+                // if(o.price > o.balance){
+                //         $("buy_layout").getElementsByTagName("p")[0].innerHTML="余额不足，微信购买！";
+                //     }else{
+                //         $("buy_layout").getElementsByTagName("p")[0].innerHTML="马上购买！";
+                //     }
+            }
+        }
+    },
+    setFocus: function() {
+        if (op.buyStep == 1) {
+            var objP = $("buy_layout").getElementsByTagName("li");
+            for (var i = 0; i < objP.length; i++) {
+                objP[i].className = '';
+            }
+            objP[op.buyButtonIndex].className = "buy_active";
+            $("buyChose").setAttribute('class','');
+            $("buyConfirmText").setAttribute('class','showHidden');
+            $("buyConfirm").setAttribute('class','showHidden');
+        } else if(op.btnConfirm ==1){
+            var objP = $("buyConfirm").getElementsByTagName("li");
+            for (var i = 0; i < objP.length; i++) {
+                objP[i].className = '';
+            }
+            objP[op.btnConfirmBtn].className = "buy_active";
+            $("buyConfirmText").setAttribute('class','');
+            $("buyConfirm").setAttribute('class','');
+            $("buyChose").setAttribute('class','showHidden');
+
+        } else {
+            if (op.area == 0) {
+                $("many_cang").className = 'many_cang';
+                for (var i = 0, length1 = $("list_list").getElementsByTagName('li').length; i < length1; i++) {
+                    $("list_list").getElementsByTagName('li')[i].className = '';
+                }
+            } else {
+                $("many_cang").className = '';
+                for (var i = 0, length1 = $("list_list").getElementsByTagName('li').length; i < length1; i++) {
+                    $("list_list").getElementsByTagName('li')[i].className = '';
+                }
+                $("list_list").getElementsByTagName('li')[op.focusIndex].className = 'list_active';
+            }
+        }
+    },
+    saveGlobals: function() {
+        setGlobalVar("index3_focusIndex", op.focusIndex);
+        setGlobalVar("index3_curPage", curPage);
+        setGlobalVar("index3_area", op.area);
+        //setGlobalVar("index_oldIndex",op.oldIndex); 
+    },
+    clearGlobals: function() {
+        setGlobalVar("index3_focusIndex", "");
+        setGlobalVar("index3_curPage", "");
+        setGlobalVar("index3_area", "");
+        //setGlobalVar("index_oldIndex","");    
+        setGlobalVar("isBack", "");
+    },
+    getGlobals: function() {
+        op.focusIndex = getGlobalVar("index3_focusIndex") ? parseInt(getGlobalVar("index3_focusIndex")) : 0;
+        curPage = getGlobalVar("index3_curPage") ? parseInt(getGlobalVar("index3_curPage")) : 1;
+        op.area = getGlobalVar("index3_area") ? parseInt(getGlobalVar("index3_area")) : 0;
+        //op.oldIndex = getGlobalVar("index_oldIndex") ? parseInt(getGlobalVar("index_oldIndex")) : 0;
+        op.clearGlobals();
+    }
+}
+var timer = "";
+
+function doNumberKey(num, start) {
+    if (timer) clearTimeout(timer);
+    $("num").getElementsByTagName("span")[0].innerHTML += num - start;
+    timer = setTimeout(function() {
+        op.area = 0;
+        var index = parseInt($("num").getElementsByTagName("span")[0].innerHTML);
+        if (index > listData.length) {
+            index = listData.length;
+        }
+        if (index < 1) {
+            index = 1;
+        }
+        op.listIndex = (index - 1) % op.size;
+        curPage = Math.ceil(index / op.size);
+        showAssetDetail();
+        op.setFocus();
+        $("num").getElementsByTagName("span")[0].innerHTML = "";
+    }, 2000);
+}
+
+function moveRight() {
+
+    op.moveRight();
+}
+
+function moveLeft() {
+
+    op.moveLeft();
+}
+
+function moveDown() {
+
+    op.moveDown();
+}
+
+function moveUp() {
+
+    op.moveUp();
+}
+
+function doConfirm() {
+
+    op.doConfirm();
+}
+</script>
+</body>
+
+</html>

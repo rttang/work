@@ -1,0 +1,113 @@
+.showHidden {
+    display: none;
+}
+
+
+/*#navSecond start*/
+
+#navSecond {
+    background: url('../image/secondNav.jpg') no-repeat;
+    width: 1280px;
+    height: 37px;
+    float:left;
+   
+}
+#navSecondContent{ 
+    /* position:relative;
+    left:100px; */
+    overflow:hidden;
+    width:872px;
+    margin:0 auto;
+}
+#navSecondContent li {
+    float: left;
+    height:26px;
+    width:78px;
+    text-align:center;
+    margin:auto;
+    padding-top:4px;
+
+}
+#navSecondContent li span{
+    color:#ffffff;
+    font-size:16px !important;
+    line-height: 26px;
+    font-weight:bold;
+    font-family:"微软雅黑";
+}
+.secondNavWordFocus{
+    background: url("../image/secondNavWordFocus.png") no-repeat;
+    background-position:2px;
+}
+
+/*#navSecond end*/
+
+
+/*#secondShow start*/
+.xiaojiantou{
+    background: url(../image/xiaojiantou.png) no-repeat scroll 30px 227px ;
+}
+#secondShow {
+    overflow: hidden;
+
+}
+
+#secondShowContent {
+    height: 510px;
+    width: 1115px;
+    margin: 0px auto;
+}
+
+#secondShowContent li {
+    float: left;
+    height: 234px;
+    width: 178px;
+    margin-right: 5px;
+    margin-bottom: 15px;
+    overflow:hidden;
+}
+
+#secondShowContent li img {
+    padding: 8px 14px 8px 9px;
+    height: 200px;
+    width:150px;
+    margin-bottom: 5px;
+}
+
+#secondShowContent li p {
+    line-height: 20px;
+    font: 20px bold !important;
+    color: #ffffff;
+    width: 100%;
+    text-align: center;
+    margin-top: -7px;
+    width: 178px;
+}
+
+.secondPicChose {
+    background: url("../image/secondPicChose.png") no-repeat;
+}
+
+#page {
+    color: #fff;
+    margin: 0 auto ;
+    overflow:hidden;
+    width:100px;
+}
+#page img{
+    height: 45px;
+}
+
+.pageNow {
+    font-size: 60px;
+    color: red;
+    font-weight: bolder;
+}
+
+.pageAll {
+    font-size: 35px;
+    color: white;
+    font-weight: bolder;
+}
+#pagenumber{border: 0px;background: url(../image/2_page_num.png) no-repeat -30px -15px; width: 200px; height: 50px; text-align: center; line-height: 50px; font-size: 20px;color:#DBE4E6;position: absolute; bottom: 23px;right: 360px;}
+

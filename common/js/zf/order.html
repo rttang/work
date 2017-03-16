@@ -1,0 +1,452 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>支付流程</title>
+</head>
+<style>
+*{
+	padding:0px;
+	margin:0px;
+	list-style:none;
+}
+body{
+	width:1280px;
+	height:720px;
+	background:url(images/bg.jpg) no-repeat;
+}
+.qr_container{
+	position:absolute;
+	width:556px;
+	height:648px;
+	background:url(images/qr_bg.png) no-repeat;
+	left: 88px;
+	top: 70px;
+}
+#qr{
+	position:relative;
+	width:403px;
+	height:399px;
+	top:80px;
+	left:72px;
+}
+.tip{
+	position:absolute;
+	width:555px;
+	left: 656px;
+	top: 155px;
+	font-size:32px;
+	color:#fff;
+	line-height:50px;
+}
+.money{
+	margin-top:30px;
+}
+.money span{
+	font-size:76px;
+}
+.btn{
+	position:absolute;
+	width:419px;
+	height:220px;
+	left: 764px;
+	top: 400px;
+}
+.btn li{
+	width:419px;
+	height:116px;
+	background:url(images/order_btn_blur.png) no-repeat;
+	line-height:95px;
+	text-align:center;
+	font-size:36px;
+	color:#fff;
+}
+#focus{
+	background:url(images/order_btn_focus.png) no-repeat;
+	color:#0069ac;
+}
+.tip_win{
+	position:absolute;
+	width:590px;
+	height:244px;
+	background:url(images/tip_win_bg.png) no-repeat;
+	left: 395px;
+	top: 300px;
+}
+#msg{
+	position:relative;
+	width:473px;
+	height:145px;
+	display:inline-block;
+	left:57px;
+	top:30px;
+	line-height:60px;
+	text-align:center;
+	font-size:32px;
+	color:#fff;
+}
+</style>
+<body>
+	<div class="qr_container">
+   	  <img id="qr" src="" />
+    </div>
+    <div class="tip">扫描二维码，通过<span id="payMentMthod">（支付方式）</span>订购<span id="productName">（业务名称）</span>费用： 
+   	  <div class="money"><span id="cost">100.00</span>元</div>
+    </div>
+   <ul class="btn" id="btn">
+   		<li id="focus">刷新查看</li>
+        <li style="margin-top:-9px;">更多充值入口</li>
+   </ul>
+   <div class="tip_win" id="tip_win">
+   		<label id="msg">
+        	您已订购<span id="name">（业务名称）<span><br />页面<div id="time" style="display:inline-block">5</div>秒后跳转
+        </label>
+   </div>
+</body>
+<script src="common/js/global.js"></script>
+<script src="common/js/commonAPI.js"></script>
+<script>
+//10.68.1.17:8180 现网地址
+//10.68.1.65:8180 测试地址
+var bossNetwork = "http://10.68.1.17:8180";
+//var bossNetwork = "http://10.68.1.65:8180";//测试
+var isColumn = 1;//是否是栏目
+var clientcode = "DCYDB001";
+var clientpwd = "DCYDB001";
+var citycode = "";
+var payMentMethod = decodeURIComponent(getQueryStr(location.href,"payMentMethod"));
+var productName =  decodeURIComponent(getQueryStr(location.href,"productName"));
+var pcode = getQueryStr(location.href,"pcode");
+var serviceId = getQueryStr(location.href,"serviceId");
+var count = parseInt(getQueryStr(location.href,"count")) || 1;
+var price = 0,prodtype=0;
+var orderStatus = {};
+var custJson;//客户信息
+var orderid;//订单id
+/**
+ *	获取城市代码-->获取用户信息-->获取pcode-->订单订购(获取订单号)-->boss询价-->二维码支付
+ *	用户点击刷新查看时：获取订单状态-->订单确认-->跳转
+ */
+window.onload = function(){
+	op.setFocus();
+	showAllInfo();
+}
+
+function queryPcode(portalMSPcode){
+	if(pcode){
+		orderOrder(1,1);
+		return;
+	}
+	var url = bossNetwork+"/UAP/InterfacerouteWXAction.do?METHOD=uniForward";
+	var requestContent = {
+		caid : portalMSPcode
+	}
+	ajaxUrl(url+"&version=1&clientcode="+clientcode+"&clientpwd="+clientpwd+"&servicecode=QUE_PCODE&citycode="+citycode+"&requestid="+getRequestid()+"&requestContent="+Obj2str(requestContent)+"&dataSign=\"\"",callBackQueryPcode,null);
+}
+
+function callBackQueryPcode(dataJson){
+	if(dataJson.status == "0"){
+		pcode = dataJson.output.pcode;
+		orderOrder(1,1);
+	}
+}
+
+function showAllInfo(){
+	$("payMentMthod").innerText = payMentMethod;
+	$("productName").innerText = productName;
+	getCity();
+}
+
+function queryCustInfo(){//客户信息查询
+	var url = bossNetwork+"/UAP/InterfacerouteWXAction.do?METHOD=uniForward";
+	var requestContent = {
+		identifierType : "3",//0：证件编码（身份证号等）1：手机号,2：客户ID,3：智能卡号
+		identifier :　cardId,
+		city : citycode
+	}
+	ajaxUrl(url+"&version=1&clientcode="+clientcode+"&clientpwd="+clientpwd+"&servicecode=QUE_CUSTINFO&citycode="+citycode+"&requestid="+getRequestid()+"&requestContent="+Obj2str(requestContent)+"&dataSign=\"\"",callBackQueryCustInfo,null);
+}
+
+function callBackQueryCustInfo(dataJson){
+	if(dataJson.status == "0"){
+		custJson = dataJson.output[0];
+		bossInquiry();
+	}
+}
+
+function orderOrder(count,unit){//获取包月订单
+	var url = bossNetwork+"/UAP/InterfacerouteWXAction.do?METHOD=uniForward";
+	var requestContent = {
+		custid     : custJson.custid,
+		userid	   : custJson.custid, 
+		gdnoid	   : "",
+		gdno	   : "",
+		order_type : prodtype,
+		fees       : "0",
+		orderparams:[{
+			permark    : "1",
+			userid 	   : "",
+			pcodestr   : "",
+			keyno      : cardId,
+			ordertype  : "1",
+			salescode  : pcode,
+			count      : count,//订购周期
+			unit       : unit,//0：天；1：月；2：年
+			ispostpone : "N"}],
+		iscrtorder 	:"Y"
+	}
+	ajaxUrl(url+"&version=1&clientcode="+clientcode+"&clientpwd="+clientpwd+"&servicecode=BIZ_PREPROCESS&citycode="+citycode+"&requestid="+getRequestid()+"&requestContent="+Obj2str(requestContent)+"&dataSign=\"\"",callBackorderOrder,null);
+}
+
+function callBackorderOrder(dataJson){
+	if(dataJson.status == "0"){
+		orderid = dataJson.output.orderid;
+		getPayQR();
+	}else{
+		$("tip_win").style.display = "block";
+		$("msg").innerHTML = dataJson.message;	
+	}
+}
+function getCity(){
+	ajaxUrl(bossNetwork+"/UAP/InterfacerouteWXAction.do?METHOD=queryCityByKeyno&requestContent={keyno:"+cardId+"}",
+		function(dataJson){
+			if(dataJson.status == "0000"){
+				citycode = dataJson.output.citycode;
+				queryCustInfo();
+				//bossInquiry();
+				//orderOrder(1,1);
+			}	
+		},
+		null
+	);
+}
+function bossInquiry(){//去boss询价
+	var url = bossNetwork+"/UAP/InterfacerouteWXAction.do?METHOD=uniForward";
+	var requestContent = {
+		custid : custJson.custid,
+		keyno : cardId,
+		pcode : "",
+		prodtype : "",
+		count : count,
+		caid : serviceId,
+		salespatterns : [{
+			patternflag : "mounth",
+			ordercount : "1",
+			orderunit : "1",
+			ispostpone : "N"
+		}]
+	};
+	ajaxUrl(url+"&version=1.0&clientcode="+clientcode+"&clientpwd="+clientpwd+"&servicecode=QUE_PRDPRICES&requestid="+getRequestid()+"&citycode="+citycode+"&requestContent="+Obj2str(requestContent),callBackInquiry,null);
+}
+
+function callBackInquiry(dataJson){
+	if(dataJson.status == "0"){
+		$("cost").innerText = dataJson.output.pricelist[0].price;
+		price = dataJson.output.pricelist[0].price;
+		pcode = dataJson.output.pcode;
+		prodtype = dataJson.output.prodtype;//0：产品；1：促销
+		orderOrder(1,1);
+	}else{
+		$("cost").innerText = "系统错误";
+	}
+}
+
+function getRequestid(clientc){
+	var code = clientc || clientcode;
+	var date = new Date();
+	var y = date.getFullYear();
+	var m = date.getMonth()+1;
+	m = m < 10 ? "0" + m : m;
+	var d = date.getDate();
+	d = d < 10 ? "0" + d : d;
+	return code+y+m+d+Math.floor(Math.random()*100000000);
+}
+
+function Obj2str(o) {
+	if (o == undefined) {
+		return "";
+	}
+	var r = [];
+	if (typeof o == "string") return "\"" + o.replace(/([\"\\])/g, "\\$1").replace(/(\n)/g, "\\n").replace(/(\r)/g, "\\r").replace(/(\t)/g, "\\t") + "\"";
+	if (typeof o == "object") {
+		if (!o.sort) {
+			for (var i in o)
+				r.push("\"" + i + "\":" + Obj2str(o[i]));
+			if (!!document.all && !/^\n?function\s*toString\(\)\s*\{\n?\s*\[native code\]\n?\s*\}\n?\s*$/.test(o.toString)) {
+				r.push("toString:" + o.toString.toString());
+			}
+			r = "{" + r.join() + "}"
+		} else {
+			for (var i = 0; i < o.length; i++)
+				r.push(Obj2str(o[i]))
+			r = "[" + r.join() + "]";
+		}
+		return r;
+	}
+	return o.toString().replace(/\"\:/g, '":""');
+}
+function getPayQR(){//获取充值的二维码，请求支付
+	//var url = "http://210.21.65.93/payweb/paytv/pay-box!doPay";//测试网
+	var url = "http://10.69.100.121:8585/payweb/paytv/pay-box!doPay";
+	//var url = "http://10.69.100.122:8585/payweb/paytv/pay-box!doPay"//现网
+	var requestContent = {
+			orderInfo:{
+				orderNo: orderid,//订单订购接口返回
+				productList:[
+					{keyno:cardId,productName:encodeURI(encodeURI(productName)),count:1,fee:price}//keyno:智能卡号,productName:订购产品的名字，count:订购周期,fee:费用
+				]
+			},
+			custInfo : {
+				custname:encodeURI(encodeURI(custJson.custname)),
+				custid:custJson.custid,
+				servid:custJson.devs[0].servs[0].servid,
+				GdNo:"",
+				Mac:"",
+				CardNo:cardId,
+				area:"",
+				city:citycode
+			},
+			totalFee : price,
+			payMentId : "",
+			bankacct : "",
+			feeCode : "",
+			redirectUrl : "",
+			noticeAction : "",
+			flag : "0",
+			orderNum : orderid
+	}
+	$("qr").src = url+"?version=1&clientcode=1010&clientpwd=6cb2d0b736f3841658074f9b854e8c54&servicecode=Pay&citycode="+citycode+"&requestid="+getRequestid("1010")+"&dataSign=\"\"&requestContent="+Obj2str(requestContent);	
+}
+
+function queryOrderStatus(){//查询订单状态
+	var url = "http://10.69.100.121:8585/payweb/paytv/payplat!queryOrderStatus";
+	//var url = "http://10.69.100.122:8585/payweb/paytv/payplat!queryOrderStatus";//现网
+	var requestContent = {
+		orderno :　orderid
+	}
+	ajaxUrl(url+"?version=1&clientcode="+clientcode+"&clientpwd="+clientpwd+"&servicecode=queryOrderStatus&citycode="+citycode+"&requestid="+getRequestid()+"&requestContent="+Obj2str(requestContent)+"&dataSign=\"\"",callBackQueryOrderStatus,null);
+}
+
+function callBackQueryOrderStatus(dataJson){
+	orderStatus = dataJson;
+	if(dataJson.status == 0){//支付成功
+		op.area = 1;
+		op.setFocus(true)
+		//comfirmOrder();
+	}else if(dataJson.status == 1){//未支付成功
+		op.area = 1;
+		op.setFocus(false)
+	}
+}
+
+function comfirmOrder(){//订单确认，在支付的时候传的falg=0时不用订单确认
+	var url = bossNetwork+"/UAP/InterfacerouteWXAction.do?METHOD=uniForward";
+	var requestContent = {
+		orderid : orderStatus.orderno,
+		payway : orderStatus.payway,
+		bankaccno : orderStatus.bankaccno,
+		payreqid : orderStatus.payreqid,
+		paycode : orderStatus.paycode
+	}
+	ajaxUrl(url+"&version=1&clientcode="+clientcode+"&clientpwd="+clientpwd+"&servicecode=BIZ_ORDERCOMMIT&citycode="+citycode+"&requestid="+getRequestid()+"&requestContent="+Obj2str(requestContent)+"&dataSign=\"\"",callBackComfirmOrder,null);
+}
+
+function callBackComfirmOrder(dataJson){
+	if(dataJson.status == "0"){
+		op.area = 1;
+		op.setFocus(true)
+	}
+}
+
+var op = {
+	area : 0,
+	index : 0,
+	lis : function(){
+		return $("btn").getElementsByTagName("li");	
+	},
+	up : function(){
+		if(op.area != 0){
+			return;
+		}
+		op.index--;
+		if(op.index < 0){
+			op.index = 0;
+		}
+		op.setFocus();
+	},
+	down : function(){
+		if(op.area != 0){
+			return;
+		}
+		op.index++;
+		if(op.index > op.lis().length - 1){
+			op.index = op.lis().length - 1;
+		}
+		op.setFocus();
+	},
+	enter : function(){
+		if(op.area == 0){
+			if(op.index == 0){
+				queryOrderStatus();
+				/*op.area = 1;
+				op.setFocus();*/
+			}else{
+				window.location.href = "more.html";	
+			}
+		}else{
+				
+		}
+	},
+	setFocus : function(status){
+		if(op.area == 0){
+			$("tip_win").style.display = "none";
+			if($("focus"))$("focus").id="";
+			op.lis()[op.index].id="focus";
+		}else{
+			if(status){
+				op.createSuccessMsg();
+				$("tip_win").style.display = "block";
+				op.showTime();
+			}else{
+				op.createFailMsg();
+				$("tip_win").style.display = "block";
+				setTimeout(function(){
+					op.area = 0;
+					$("tip_win").style.display = "none";					
+				},2000);
+			}
+		}
+	},
+	createSuccessMsg : function(){
+		var str = "您已订购<span id='name'>"+productName+"<span><br/>页面<div id='time' style='display:inline-block'>5</div>秒后跳转</span></span>";
+		$("msg").innerHTML = str;
+	},
+	
+	createFailMsg : function(){
+		var str = "您未支付成功。"
+		$("msg").innerHTML = str;
+	},
+	showTime : function(){
+		window.clearInterval(op.ter);
+		var time = parseInt($("time").innerText);
+		op.ter = setInterval(function(){
+			$("time").focus();						  
+			time--;
+			$("time").innerText = time;
+			if(time == 0){
+				goTo.back();
+			}
+		},1000);
+	}
+}
+function moveUp(){
+	op.up();
+}
+function moveDown(){
+	op.down();
+}
+function doConfirm(){
+	op.enter();
+}
+</script>
+</html>

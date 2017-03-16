@@ -1,0 +1,278 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>支付流程</title>
+</head>
+<style>
+*{
+	padding:0px;
+	margin:0px;
+	list-style:none;
+}
+body{
+	width:1280px;
+	height:720px;
+	background:url(images/bg.jpg) no-repeat;
+}
+.list{
+	position:absolute;
+	width:1280px;
+	height:590px;
+	top: 128px;
+	text-align:center;
+	overflow:hidden;
+}
+.list li{
+	width:280px;
+	height:590px;
+	display:inline-block;
+	margin-left:-40px;
+	background:url(images/index_blur.png) no-repeat;
+}
+.list_focus{
+	position:absolute;
+	width:444px;
+	height:628px;
+	background:url(images/index_focus.png) no-repeat;
+	left: 150px;
+	top: 91px;
+	display:none;
+}
+.logo{
+	width:112px;
+	height:112px;
+	display:block;
+	margin-left:44px;
+}
+label{
+	width:200px;
+	height:50px;
+	text-align:center;
+	display:block;
+	line-height:50px;
+	color:#fff;
+	font-size:24px;
+}
+.cont{
+	position:absolute;
+	width:200px;
+	height:165px;
+	top: 120px;
+}
+#focus{
+	position:absolute;
+	width:250px;
+	height:270px;
+	left:241px;
+	top:70px;
+}
+#focus .logo{
+	width:204px;
+	height:204px;
+	margin-left:-3px;
+}
+#focus label{
+	width:250px;
+	color:#48a1d4;
+	font-size:32px;
+	line-height:65px;
+	margin-left:-26px;
+}
+.to_more{
+	position:absolute;
+	width:280px;
+	height:590px;
+	background:url(images/index_blur.png) no-repeat;
+	left: 1220px;
+	top: 128px;
+	display:none;
+}
+.container{
+	position:absolute;
+	width:1280px;
+	height:590px;
+	top: 128px;
+}
+</style>
+<body>
+	<ul class="list" id="list">
+    	<li style="display:none;"></li>
+        <li style="margin-left:0px;"></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+    </ul>
+    <div class="to_more" id="to_more"></div>
+    <div class="list_focus" id="list_focus"></div>
+    <div id="container" class="container">
+		<div class="cont" style="left:17px">
+            <img class="logo" src="images/weixin.png" />
+            <label>微信支付</label>
+        </div>
+        <div class="cont" style="left:17px">
+            <img class="logo" src="images/jianhang.png" />
+            <label>建行支付</label>
+        </div>
+        <div class="cont">
+            <img class="logo third" src="images/zhifubao.png" />
+            <label>支付宝支付</label>
+        </div>
+         <div class="cont">
+            <img class="logo" src="images/jianhang.png" />
+            <label>建行支付</label>
+        </div>
+        <div class="cont">
+            <img class="logo third" src="images/zhifubao.png" />
+            <label>支付宝支付</label>
+        </div>
+    </div>
+</body>
+<script src="common/js/global.js"></script>
+<script src="common/js/commonAPI.js"></script>
+<script>
+var productName =  decodeURIComponent(getQueryStr(location.href,"productName"));
+var serviceId = getQueryStr(location.href,"serviceId");
+var count = getQueryStr(location.href,"count");
+var one_position = 513;
+var more_spacing = 120;
+var focus_gap = 117;
+var focus_init = 0;
+var one = 0;
+var len = 0;
+var data = [
+{name:"微信支付",photo:"weixin.png"},
+]
+window.onload = function(){
+	op.initLis(data);
+	op.setFocus();
+}
+var op = {
+	see_index : 0,
+	data_index : 0,
+	lis : function(){
+		return $("list").getElementsByTagName("li");
+	},
+	containers : function(){
+		return $("container").getElementsByTagName("div");
+	},
+	initLis : function(data){
+		if(data.length > 5){
+			len = 5;
+			$("to_more").style.display = "block";
+		}else{
+			len = data.length;
+			$("to_more").style.display = "none";
+		}
+		$("list").innerHTML = "";
+		$("container").innerHTML ="";
+		one = one_position - (len - 1)*more_spacing;
+		focus_init = one - focus_gap;
+		for(var i=0;i<data.length;i++){
+			var li = document.createElement("li");
+			if(i==0){
+				li.style.marginLeft = "0px";
+			}
+			var div = document.createElement("div");
+			div.className = "cont";
+			div.style.left = one + i*2*more_spacing + "px";
+			var img = document.createElement("img");
+			img.src = "images/"+data[i].photo;
+			img.className = "logo";
+			var label =  document.createElement("label");
+			label.innerHTML = data[i].name;
+			div.appendChild(img);
+			div.appendChild(label);
+			$("container").appendChild(div);
+			$("list").appendChild(li);
+			
+		}
+	},	
+	initDiv : function(data){
+		var len = op.lis().length > 5 ? 5 : op.lis().length;
+		var one = one_position - (len-1)*more_spacing;
+		for(var i=0;i<op.lis().length;i++){
+			var div = document.createElement("div");
+		}
+	},
+	rigth : function(){
+		op.see_index++;
+		op.data_index++;
+		if(op.see_index > len - 1){
+			op.see_index = len - 1;
+		}
+		if(op.data_index > op.lis().length - 1){
+			op.data_index = 0;
+			op.see_index = 0;
+		}
+		op.setFocus();
+	},
+	left : function(){
+		op.see_index--;
+		op.data_index--;
+		if(op.see_index <　0){
+			op.see_index = 0;
+		}
+		if(op.data_index < 0){
+			op.data_index = 0;
+		}
+		op.setFocus();
+	},
+	enter : function(){
+		window.location.href = "order.html?payMentMethod="+encodeURIComponent(data[op.data_index].name)+"&productName="+encodeURIComponent(productName)+"&serviceId="+serviceId+"&count="+count;
+	},
+	setFocus : function(){
+		op.setBlur();
+		for(var i=0;i<op.lis().length;i++){
+			op.lis()[i].style.visibility = "visible";
+			op.lis()[i].style.marginLeft = "-40px";	
+		}
+		for(var i=0;i<op.lis().length;i++){
+			if(i==0){
+				op.lis()[i].style.marginLeft = "0px";	
+			}
+			if(i<(op.data_index-op.see_index)){
+				op.lis()[i+1].style.marginLeft = "0px";
+				op.lis()[i].style.display = "none";
+			}else{
+				op.lis()[i].style.display = "inline-block";
+			}
+		}
+		if(op.lis().length > 5){
+			if(op.data_index == op.lis().length - 1){
+				$("to_more").style.display = "none";	
+			}else{
+				$("to_more").style.display = "block";	
+			}
+		}else{
+			$("to_more").style.display = "none";
+		}
+		$("list_focus").style.display = "block";
+		$("list_focus").style.left = focus_init + op.see_index* more_spacing*2 + "px";
+		op.lis()[op.data_index].style.visibility = "hidden";
+		op.containers()[op.data_index].id = "focus";
+		if(op.data_index > op.see_index){
+			$("container").style.left = -(op.data_index - op.see_index)*more_spacing*2 + "px";
+		}else{
+			$("container").style.left = "0px";
+			$("focus").style.left = one + more_spacing*2*op.see_index + "px";
+		}
+	},
+	setBlur : function(){
+		if($("focus")){
+			$("focus").id="";
+		};
+	}
+}
+function moveRight(){
+	op.rigth();
+}
+function moveLeft(){
+	op.left();
+}
+function doConfirm(){
+	op.enter();
+}
+</script>
+</html>

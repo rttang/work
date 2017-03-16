@@ -1,0 +1,171 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>风云点播</title>
+    <link rel="stylesheet" href="css/reset.css" />
+    <link id="tipWindow" type="text/css" rel="stylesheet" href="css/tipWindow.css" />
+    <link href="./css/index.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="css/secondPage.css">
+</head>
+
+<body>
+    <div id="tip_visibility" class="tip_visibility">
+        <div class="cover"></div>
+        <div class="tip_window" id="tip_window"></div>
+    </div>
+    <div id="buyLayout">
+        <h3 style="color:red;">系统错误未获取账户余额。</h3>
+        <ul id="buyChose">
+            <li><span class="old">余额购买1个月<span class="linethrough">（16元）</span></span><span class="new">限时促销:12元</span></li>
+            <li><span class="old">微信购买1个月<span class="linethrough">（16元）</span></span><span class="new">限时促销:12元</span></li>
+            <li><span class="old">余额购买3个月<span class="linethrough">（42元）</span></span><span class="new">限时促销:32元</span></li>
+            <li><span class="old">微信购买3个月<span class="linethrough">（42元）</span></span><span class="new">限时促销:32元</span></li>
+             <li><span class="old">余额购买12个月<span class="linethrough">（99元）</span></span><span class="new">限时促销:75元</span></li>
+            <li><span class="old">微信购买12个月<span class="linethrough">（99元）</span></span><span class="new">限时促销:75元</span></li>
+            <li id="last">暂不购买</li>
+        </ul>
+        <p id=buyConfirmText class="showHidden">请您确定订购数量：</p>
+        <ul id="buyConfirm" class="showHidden">
+            <li>确认</li>
+            <li>取消</li>
+        </ul>
+    </div>
+    <div id="navBar" class="clear">
+        <img id="logo" src="image/logo.png"  />
+        <ul id="nav" class='nav0'>
+            <li class="wordAction">首页</li>
+            <li>风云剧场</li>
+            <li>风云综艺</li>
+            <li>风云3D</li>
+            <li>央视精品</li>
+            <li>免费试看</li>
+        </ul>
+        <ul id="buyCollect">
+            <li id="buy" class="buyCollectFocus"></li>
+            <li id="collect"></li>
+        </ul>
+        <div id="navSecond" class="showHidden">
+            <ul id="navSecondContent">
+            </ul>
+        </div>
+    </div>
+    <!-- navBar end -->
+    <div id="content">
+        <ul id="show">
+            <li id='showBig' class="choseFrame1">
+                <ul id="showBigPic">
+                    <li class="showPic"><img src="image/showPIC.gif" alt="" /></li>
+                    <li><img src="image/showPIC.gif" alt="" /></li>
+                    <li><img src="image/showPIC.gif" alt="" /></li>
+                </ul>
+                <div id="mark"></div>
+                <div id="warpMark">
+                    <p id="title"></p>
+                    <ul id='circle'>
+                        <li class="circleFocus">1</li>
+                        <li>2</li>
+                        <li>3</li>
+                    </ul>
+                </div>
+            </li>
+            <li id='showMidd1' class="choseFrame2"><img src="image/test_03.gif" alt="" /></li>
+            <li id='showMidd2' class="choseFrame2"><img src="image/test_03.gif" alt="" /></li>
+            <li id='showSm1' class="choseFrame3"><img src="image/test_07.gif" alt="" /></li>
+            <li id='showSm2' class="choseFrame3"><img src="image/test_07.gif" alt="" /></li>
+            <li id='showSm3' class="choseFrame3"><img src="image/test_07.gif" alt="" /></li>
+        </ul>
+        <div id="secondShow" class="showHidden">
+            <img id="i_0" src="./img/index_jiaobiao_gaoqing.png" class="jiaobiao" />
+            <img id="i_1" src="./img/index_jiaobiao_gaoqing.png" class="jiaobiao" />
+            <img id="i_2" src="./img/index_jiaobiao_gaoqing.png" class="jiaobiao" />
+            <img id="i_3" src="./img/index_jiaobiao_gaoqing.png" class="jiaobiao" />
+            <img id="i_4" src="./img/index_jiaobiao_gaoqing.png" class="jiaobiao" />
+            <img id="i_5" src="./img/index_jiaobiao_gaoqing.png" class="jiaobiao" />
+            <img id="i_6" src="./img/index_jiaobiao_gaoqing.png" class="jiaobiao" />
+            <img id="i_7" src="./img/index_jiaobiao_gaoqing.png" class="jiaobiao" />
+            <img id="i_8" src="./img/index_jiaobiao_gaoqing.png" class="jiaobiao" />
+            <img id="i_9" src="./img/index_jiaobiao_gaoqing.png" class="jiaobiao" />
+            <img id="i_10" src="./img/index_jiaobiao_gaoqing.png" class="jiaobiao" />
+            <img id="i_11" src="./img/index_jiaobiao_gaoqing.png" class="jiaobiao" />
+            <img id="g_0" src="./img/index_jiaobiao_new.png" class="jiaobiao" />
+            <img id="g_1" src="./img/index_jiaobiao_new.png" class="jiaobiao" />
+            <img id="g_2" src="./img/index_jiaobiao_new.png" class="jiaobiao" />
+            <img id="g_3" src="./img/index_jiaobiao_new.png" class="jiaobiao" />
+            <img id="g_4" src="./img/index_jiaobiao_new.png" class="jiaobiao" />
+            <img id="g_5" src="./img/index_jiaobiao_new.png" class="jiaobiao" />
+            <img id="g_6" src="./img/index_jiaobiao_new.png" class="jiaobiao" />
+            <img id="g_7" src="./img/index_jiaobiao_new.png" class="jiaobiao" />
+            <img id="g_8" src="./img/index_jiaobiao_new.png" class="jiaobiao" />
+            <img id="g_9" src="./img/index_jiaobiao_new.png" class="jiaobiao" />
+            <img id="g_10" src="./img/index_jiaobiao_new.png" class="jiaobiao" />
+            <img id="g_11" src="./img/index_jiaobiao_new.png" class="jiaobiao" />
+            <ul id="secondShowContent">
+                <li>
+                    <img src="image/test.gif">
+                    <p>名称内容</p>
+                </li>
+                <li>
+                    <img src="image/test.gif">
+                    <p>名称内容</p>
+                </li>
+                <li>
+                    <img src="image/test.gif">
+                    <p>名称内容</p>
+                </li>
+                <li>
+                    <img src="image/test.gif">
+                    <p>名称内容</p>
+                </li>
+                <li>
+                    <img src="image/test.gif">
+                    <p>名称内容</p>
+                </li>
+                <li>
+                    <img src="image/test.gif">
+                    <p>名称内容</p>
+                </li>
+                <li>
+                    <img src="image/test.gif">
+                    <p>名称内容</p>
+                </li>
+                <li>
+                    <img src="image/test.gif">
+                    <p>名称内容</p>
+                </li>
+                <li>
+                    <img src="image/test.gif">
+                    <p>名称内容</p>
+                </li>
+                <li>
+                    <img src="image/test.gif">
+                    <p>名称内容</p>
+                </li>
+                <li>
+                    <img src="image/test.gif">
+                    <p>名称内容</p>
+                </li>
+                <li>
+                    <img src="image/test.gif">
+                    <p>名称内容</p>
+                </li>
+            </ul>
+            <div id="page">
+                <span id="pageNow" class="pageNow">1</span>
+                <img src="./image/2_page.png">
+                <span id="pageAll" class="pageAll">5</span>
+            </div>
+            <div id="pagenumber">输入页面自动跳转</div>
+        </div>
+    </div>
+    <!-- content end -->
+    <script src="./common/js/global.js"></script>
+    <script src="./common/js/commonAPI.js"></script>
+    <script src="./common/js/jPanel.js"></script>
+    <script src="./common/js/order.js"></script>
+    <script src="./script/json2.js"></script>
+    <script src='script/index.js'></script>
+</body>
+
+</html>

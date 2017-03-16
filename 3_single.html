@@ -1,0 +1,683 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>央视点播</title>
+     <link id="tipWindow" type="text/css" rel="stylesheet" href="css/tipWindow.css" />
+    <link href="./css/index_3.css" rel="stylesheet">
+</head>
+
+<body>
+    <div id="buy_layout" style="display: none;">
+        <h3 style="color:red;">系统错误未获取账户余额。</h3>
+        <ul id="buyChose">
+             <li><span class="old">余额购买1个月<span class="linethrough">（16元）</span></span><span class="new">限时促销:12元</span></li>
+            <li><span class="old">微信购买1个月<span class="linethrough">（16元）</span></span><span class="new">限时促销:12元</span></li>
+            <li><span class="old">余额购买3个月<span class="linethrough">（42元）</span></span><span class="new">限时促销:32元</span></li>
+            <li><span class="old">微信购买3个月<span class="linethrough">（42元）</span></span><span class="new">限时促销:32元</span></li>
+             <li><span class="old">余额购买12个月<span class="linethrough">（99元）</span></span><span class="new">限时促销:75元</span></li>
+            <li><span class="old">微信购买12个月<span class="linethrough">（99元）</span></span><span class="new">限时促销:75元</span></li>
+            <li id="last">暂不购买</li>
+        </ul>
+        <p id=buyConfirmText class="showHidden">请您确定订购数量：</p>
+        <ul id="buyConfirm" class="showHidden">
+            <li>确认</li>
+            <li>取消</li>
+        </ul>
+    </div>
+    <img id="i_0" src="./img/index_jiaobiao_gaoqing.png" class="jiaobiao" />
+    <img id="g_0" src="./img/index_jiaobiao_new.png" class="jiaobiao" />
+    <div id="content_left">
+        <ul>
+            <li id="titleFull">亲爱的，我把孩子放大了</li>
+            <li id="zhuyan_all"><span class="redtitle">主演：</span>&nbsp;
+                <spna id="zhuyan">这个是详细内容</spna>
+            </li>
+            <li id="daoyan_all">
+                <sapn class="redtitle">导演：</sapn>&nbsp;<span id="daoyan">这个是详细内容</span></li>
+            <li id='summary'>这个是详细内容这个是详细内容这个是详细内容这个是详细内容这个是详细内容这个是详细内容这个是详细内容这个是详细内容这个是详细内容这个是详细内容这个是详细内容这个是详细内容这个是详细内容这个是详细内容这个是详细内容这个是详细内容这个是详细内容这个是详细内容这个是详细内容这个是详细内容这个是详细内容这个是详细内容</li>
+        </ul>
+        <img id="poster" src="./images/u202.png" alt="">
+    </div>
+    <div id="content_right">
+        <div id="play" class="the_button"></div>
+        <div id='cang' class="the_button"></div>
+    </div>
+    <div id="tip_visibility" class="tip_visibility">
+        <div class="cover"></div>
+        <div class="tip_window" id="tip_window"></div>
+    </div>
+    <div id="dataJson"></div>
+</body>
+<script src="./common/js/global.js"></script>
+<script src="./common/js/commonAPI.js"></script>
+<script src="./common/js/order.js"></script>
+<script>
+//var userId ="8851003273568946"
+var isAccessOrder = null;
+var folderContentsOrder;
+var folderAssetId = getQueryStr(location.href, "folderAssetId");
+var providerId = getQueryStr(location.href, "providerId");
+var assetId = getQueryStr(location.href, "assetId");
+var wayback = getQueryStr(location.href, "wayback");
+var scrollHeight = 190,
+    pointHeight = 51;
+var listData = [],
+    curData = [],
+    chargeMode, data;
+goUrl = "http://10.2.4.60:8080";
+var curPage = 1,
+    totalPage = 1;
+var hasBookmark = "N",
+    resumePoint = 0,
+    bookNumFocus = 0,
+    mediaFocus = 0;
+var isCollected = false; //是否收藏过
+var detailJson;
+
+//初始化购买程序
+function getAssetDetail() {
+    var VOD_getAssetDetail = { //媒资详情
+        "data": '<GetItemData titleAssetId="' + assetId + '" portalId="' + portalId + '" client="' + cardId + '" account="' + userId + '"/>',
+        "callBack": getAsset
+    };
+    IEPG.getData(URL.VOD_getAssetDetail, VOD_getAssetDetail);
+}
+
+function checkBookmarkDetail() { //检查书签
+    var VOD_checkBookmark = {
+        'data': '<CheckSavedProgram  folderAssetId="' + assetId + '" portalId="' + portalId + '" client="' + cardId + '" account="' + userId + '"/>',
+        "callBack": checkBookmark
+    }
+    IEPG.getData(URL.VOD_checkBookmark, VOD_checkBookmark)
+}
+
+function checkBookmark(_dataJson) {
+    var bookmarkFlag = _dataJson.bookmarkFlag;
+    hasBookmark = bookmarkFlag == "true" ? "Y" : "N";
+    if (bookmarkFlag == "true") {
+        var resourceId = _dataJson.assetId;
+        resumePoint = _dataJson.timePosition;
+        if (listData.folderFrame.assetId == resourceId) {
+            //$("play").innerHTML = "续 看";
+        }
+    } else {
+        resumePoint = 0;
+        //op.listIndex = 0;
+        $("play").innerHTML = "播 放";
+    }
+
+    //showAssetDetail();
+    //op.setFocus();
+}
+
+function getBookmarksDetail() { //获取收藏
+    var VOD_getBookmarks = {
+        'data': '<GetBookmarks startAt="1" maxItems="999" portalId="' + portalId + '" client="' + cardId + '" account="' + userId + '" custom="VODPkg" />',
+        'callBack': getBookmarks
+    }
+    IEPG.getData(URL.VOD_getSavedProgram, VOD_getBookmarks);
+}
+
+function getBookmarks(dataJson) {
+    var reg = /([A-Z]{4})([0-9]+)/;
+    var rel =reg.exec(folderAssetId);
+    var newFolderAssetId='';
+    
+    // if(folderAssetId !='MANU0000000000228065'){
+    //     newFolderAssetId = rel[1] +'0000000000'+rel[2];
+    // }else {
+    //     newFolderAssetId = folderAssetId;
+    // }
+    if (dataJson.totalResults != 0) {
+        for (var i = 0; i < dataJson.bookmarkedItem.length; i++) {
+            if (dataJson.bookmarkedItem[i].selectableItem[0].assetId == assetId && dataJson.bookmarkedItem[i].selectableItem[0].folderAssetId == folderAssetId) {
+                isCollected = true;
+                break;
+            } else {
+                isCollected = false;
+            }
+        }
+    } else {
+        isCollected = false;
+    }
+    showBookmarks();
+}
+
+function showBookmarks() {
+    if (isCollected) {
+        //$("red").style.display = "block";
+        $("cang").innerHTML = "已 收 藏"
+    } else {
+        $("cang").innerHTML = "收 藏"
+            //$("red").style.display = "none";
+    }
+}
+
+function addBookmarksDetail() { //加入收藏
+    console.log('folderAssetId:', folderAssetId);
+    var VOD_addBookmarks = {
+        'data': '<AddBookmark titleAssetId="' + assetId + '" folderAssetId="' + folderAssetId + '" custom="VODPkg" portalId="' + portalId + '" client="' + cardId + '" account="' + userId + '"/>',
+        'callBack': addBookmarks
+    }
+    IEPG.getData(URL.VOD_addSavedProgram, VOD_addBookmarks);
+}
+
+function addBookmarks(dataJson) {
+    console.log(dataJson);
+    if (dataJson.code) {
+        showMsg(tipUrl + "iPG/tip/a_errorTip.htm", dataJson.message);
+    } else {
+        //$("red").style.display = "block";
+        getBookmarksDetail();
+    }
+}
+
+function deleteBookmarksDetail() { //删除收藏
+    var VOD_deleteBookmarks = {
+        'data': '<DeleteBookmark titleAssetId="' + assetId + '" custom="VODPkg" portalId="' + portalId + '" client="' + cardId + '" account="' + userId + '"/>',
+        'callBack': deleteBookmarks
+    }
+    IEPG.getData(URL.VOD_removeVodFavorites, VOD_deleteBookmarks);
+}
+
+function deleteBookmarks(dataJson) {
+    if (dataJson.code == 0) {
+        //$("red").style.display = "none";
+        getBookmarksDetail();
+    } else {
+        showMsg(tipUrl + "iPG/tip/a_errorTip.htm", dataJson.message);
+    }
+}
+function getPrevPath() { //从机顶盒变量或浏览器cookie中获取前一路径，前一页面需要saveUrlPath
+    var tempUrl = getGlobalVar(urlPathGlobalName);
+    if (tempUrl == undefined || tempUrl == "") return "";
+    var tuArr = tempUrl.split(urlSplitChar);
+    var tl = tuArr.length;
+    var tul = tuArr.pop();
+    if (tul.split("?")[0] == location.href.split("?")[0]) {
+        tul = tuArr.pop();
+    }
+    return tul;
+};
+function doReturnKey() {
+   var result = getPrevPath();
+   //console.log(result);
+    if(result.indexOf('cctv')==-1){
+        if(!wayback)
+        window.location.href ="index.html";
+        else doEvent.back();
+
+    }else{
+        doEvent.back();
+    }
+}
+function getAsset(dataJson) {
+    //document.getElementById('dataJson').innerHTML=JSON.stringify(dataJson);
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    chargeMode = dataJson.selectableItem.chargeMode;
+    listData = dataJson;
+    //totalPage = Math.ceil(listData.length / op.size);
+    $("titleFull").innerHTML = dataJson.selectableItem.titleFull;
+    var html = "";
+    if (dataJson.selectableItem.director.length != 0) {
+        html = dataJson.selectableItem.director[0].name;
+        for (var i = 1; i < dataJson.selectableItem.director.length; i++) {
+            html += (" " + dataJson.selectableItem.director[i].name);
+        }
+    }
+
+    $("daoyan").innerHTML = html;
+    //$("area").innerHTML = dataJson.folderFrame.folderDetails.area;
+    if (dataJson.selectableItem.actorsDisplay == '主演') {
+        $("zhuyan_all").style.display = 'none';
+    }
+    $("zhuyan").innerHTML = dataJson.selectableItem.actorsDisplay;
+    $("summary").innerHTML = IEPG.subText(dataJson.selectableItem.summarMedium, 340, 0);
+    $("poster").src = gPoster(dataJson.selectableItem.imageList, 288, 383);
+
+
+    //增加角标
+    if (dataJson.selectableItem.displayFlags == "N") {
+        $("g_0").setAttribute('style', 'top:' + ($("poster").offsetTop - 7) + 'px;left:' + ($("poster").offsetLeft - 9) + 'px;display:block;');
+    } else if (dataJson.selectableItem.videoType == 1) {
+        $("i_0").setAttribute('style', 'top:' + ($("poster").offsetTop - 7) + 'px;left:' + ($("poster").offsetLeft - 9) + 'px;display:block;');
+    }
+    var posterPic = gPoster(dataJson.selectableItem.imageList, 288, 383); //节目海报
+    if (dataJson.selectableItem.rentaInfo) {
+        hasBookmark = dataJson.selectableItem.rentaInfo.resumePoint > 0 ? "Y" : "N ";
+        resumePoint = dataJson.selectableItem.rentaInfo.resumePoint;
+    }
+    var assettypes = "";
+    var originalPrice = "";
+    if (dataJson.selectionChoice && dataJson.selectionChoice.length > 0) {
+        var type = dataJson.selectionChoice.assetType.split(";")[0].split("/");
+        assettypes = IEPG.subText(type[type.length - 1], 12, 0);
+        originalPrice = dataJson.selectionChoice.selectionChoice[0].originalPrice;
+    }
+
+    detailJson = {
+        "columnName": dataJson.selectableItem.folderName, //影片所在栏目名称
+        "columnId": dataJson.selectableItem.folderAssetId, //影片栏目id
+        "assetName": dataJson.selectableItem.titleFull, //影片名称
+        "chapters": dataJson.selectableItem.chapter, //影片总集数，默认一集
+        //"director" : director,                        //导演
+        "actorsDisplay": dataJson.selectableItem.actorsDisplay, //主演
+        "recommendLevel": dataJson.selectableItem.recommandRating || 0, //推荐星级
+        "userRecommendLevel": dataJson.selectableItem.recommandTimes, //用户推荐人气
+        "playCount": parseInt(dataJson.selectableItem.favorRating, 10) || 0, //点播人气
+        "summaryShort": dataJson.selectableItem.summarMedium, //剧情介绍
+        "hasBookmark": hasBookmark, //是否有书签
+        "resumePoint": resumePoint,
+        "chargeMode": 5, //断点时间
+        "playTime": parseInt(dataJson.selectableItem.displayRunTime, 10) || 0, //片长
+        "originalPrice": originalPrice, //影片原价
+        "providerId": dataJson.selectableItem.providerId,
+        "recordType": dataJson.selectableItem.serviceType, //节目类型VOD：点播(默认值)BTV：回看nPVR：个人录像VODPkg：媒资包
+        "chargeModel": dataJson.selectableItem.chargeModel, //销售策略   0:一次性费用 1:周期性费用
+        "resourceId": dataJson.selectableItem.assetId, //资产id
+        "columnMapId": dataJson.selectableItem.folderAssetId, //节目上架id
+        //"goodsId" : dataJson.selectableItem.serviceId,                          //商品id
+        "buyPlayType": "0", //是否续看1续看 ,0 非续看
+        "assettypes": assettypes,
+        "posterPic": posterPic,
+        "folderName": dataJson.selectableItem.folderName,
+        "showType": dataJson.selectableItem.showType
+    };
+    //data=detailJson;
+    //document.getElementById('dataJson').innerHTML=JSON.stringify(detailJson);
+    getBookmarksDetail();
+    checkBookmarkDetail();
+}
+
+function authentication(columnId) { //鉴权
+    var VOD_getFolderContents = {
+        "data": '<GetFolderContents  mergeTV="1" assetId="' + columnId + '" portalId="' + portalId + '" account="' + userId + '" client="' + cardId + '" includeFolderProperties="Y" includeSubFolder="Y" includeSelectableItem="Y" maxItems="10" startAt="1" />',
+        "callBack": callBackAuthentication
+    };
+    IEPG.getData(URL.VOD_getAssetList, VOD_getFolderContents);
+}
+
+function callBackAuthentication(dataJson) {
+    folderContentsOrder = dataJson;
+    var serviceIdOrder = dataJson.folderFrame.serviceId;
+    var assetIdOrder = dataJson.selectableItemList[0].assetId;
+    var providerIdOrder = dataJson.selectableItemList[0].providerId;
+    var VOD_checkBuy = {
+        "data": "<ValidatePlayEligibility providerId=\"" + providerIdOrder + "\"  assetId=\"" + assetIdOrder + "\" portalId=\"" + portalId + "\" client=\"" + cardId + "\" account=\"" + userId + "\"/>",
+        "callBack": checkBuyOrder
+    };
+    IEPG.getData(URL.VOD_checkBuy, VOD_checkBuy);
+}
+
+function checkBuyOrder(dataJson) {
+    if (dataJson.orderFlag == "N") {
+        isAccessOrder = false;
+    } else {
+        isAccessOrder = true;
+    }
+    //alert(isAccessOrder);
+}
+
+
+function queryBalance() { //查询余额
+    var bossNetwork = "http://10.68.1.17:8180";
+    ajaxUrl(
+        bossNetwork + "/UAP/UAPJAction.do?METHOD=uniForward&opcode=Z02&syscode=DCYDB001&sm_no=" + cardId,
+        callBackQueryBalance,
+        null
+    );
+}
+
+function callBackQueryBalance(dataJson) {
+    var balanceOrder = 0;
+    if (dataJson.status == "0000") {
+        balanceOrder = dataJson.ouput.cashbox;
+    } else {
+        balanceOrder = 0;
+    }
+    $("buy_layout").getElementsByTagName("h3")[0].innerHTML = "账户余额为" + balanceOrder + "元,余额不足时直接跳转微信支付";
+}
+
+function vodPlay1() {
+
+    Buy = new IEPG.BUY(detailJson);
+    Buy.buyPlayType = "0";
+    //Buy.tryFlag = "0";
+    IEPG.doPlay();
+    //Buy.doBuy(URL.VOD_checkBuy, checkBuy);
+}
+
+
+function vodPlay() { //播放
+    var playJson = listData.folderFrame;
+    playJson.singleFlag = "true";
+    playJson.folderAssetId = assetId;
+    //如果子集获取不到chargMode，则取资源包的
+    if (playJson.chargeMode == "") {
+        playJson.chargeMode = chargeMode;
+    }
+    //如果子集获取不到serviceId，则取资源包的
+    if (playJson.serviceId == "") {
+        //playJson.serviceId = detailJson.goodsId;
+        playJson.resourceId = playJson.folderAssetId;
+        playJson.pkgChargeMode = 1;
+
+    }
+    //  playJson.goodsId = detailJson.goodsId;
+    //playJson.packageSingPlay = "1";
+    IEPG.doPlayAction(playJson);
+}
+
+function setGlobalToPlayNext() {
+    setGlobalVar("playType", "pakg"); // 电视剧续播标识
+    setGlobalVar("mediaFocus", mediaFocus); //保存当前播放章节数
+    setGlobalVar("pakgId", assetId); //保存当前资源包的id，用于电视剧播放下一集
+}
+
+function playLast() { //续看
+    var playJson = listData[bookNumFocus];
+    playJson.buyPlayType = "1";
+    playJson.singleFlag = "true";
+    playJson.resumePoint = resumePoint;
+    IEPG.doPlayAction(playJson);
+}
+var op = {
+    area: 0, // 0:数字选集列表;   1:功能按钮; 2:数字选集框
+    btnIndex: 0,
+    listIndex: 0,
+    size: 　14,
+    buyStep: 0,
+    buyButtonIndex: 0,
+    btnConfirm:0,
+    btnConfirmBtn:1,
+    getListLis: function() {
+        return $("list").getElementsByTagName("li");
+    },
+    moveRight: function() {
+        if (op.buyStep == 1) {
+            console.log(op.buyButtonIndex)
+            op.buyButtonIndex == 6 ? op.buyButtonIndex = 0 : op.buyButtonIndex += 1;
+            op.setFocus();
+        } else if(op.btnConfirm ==1){
+            op.btnConfirmBtn = 1 ;
+            op.setFocus();
+        }else{
+            if (op.btnIndex == 0) {
+                op.btnIndex = 1;
+            } else {
+                op.btnIndex = 0;
+            }
+            op.setFocus();
+        }
+
+    },
+    moveLeft: function() {
+        if (op.buyStep == 1) {
+            console.log(op.buyButtonIndex)
+            op.buyButtonIndex == 0 ? op.buyButtonIndex = 6 : op.buyButtonIndex -= 1;
+            op.setFocus();
+        } if(op.btnConfirm ==1){
+            op.btnConfirmBtn = 0 ;
+            op.setFocus();
+        }else {
+            if (op.btnIndex == 0) {
+                op.btnIndex = 1;
+            } else {
+                op.btnIndex = 0;
+            }
+            op.setFocus();
+        }
+    },
+    moveUp: function() {
+        if (op.buyStep == 1) {
+            console.log(op.buyButtonIndex)
+            switch (op.buyButtonIndex) {
+                case 0:
+                    op.buyButtonIndex = 6;
+                    break;
+                case 1:
+                    op.buyButtonIndex = 1;
+                    break;
+                case 2:
+                    op.buyButtonIndex = 0;
+                    break;
+                case 3:
+                    op.buyButtonIndex = 1;
+                    break;
+                case 4:
+                    op.buyButtonIndex = 2;
+                    break;
+                case 5:
+                    op.buyButtonIndex = 3;
+                    break;
+                case 6:
+                    op.buyButtonIndex = 4;
+                    break;
+            }
+            op.setFocus();
+        }
+
+    },
+    moveDown: function() {
+        if (op.buyStep == 1) {
+            console.log(op.buyButtonIndex)
+            switch (op.buyButtonIndex) {
+                case 0:
+                    op.buyButtonIndex = 2;
+                    break;
+                case 1:
+                    op.buyButtonIndex = 3;
+                    break;
+                case 2:
+                    op.buyButtonIndex = 4;
+                    break;
+                case 3:
+                    op.buyButtonIndex = 5;
+                    break;
+                case 4:
+                    op.buyButtonIndex = 6;
+                    break;
+                case 5:
+                    op.buyButtonIndex = 5;
+                    break;
+                case 6:
+                    op.buyButtonIndex = 6;
+                    break;
+            }
+            op.setFocus();
+        }
+
+    },
+    reFreshBuy: function(num) {
+        o.init({
+            columnId: "MANU228065", //环球剧场 MANU177573 样式点播 MANU178098
+            count: num
+        });
+    },
+    gotoWeixin: function(num) {
+        saveUrlPath();
+        window.location.href = "./common/js/zf/index.html?productName=" + folderContentsOrder.folderFrame.displayName + "&serviceId=" + folderContentsOrder.folderFrame.serviceId + "&count=" + num;
+    },
+    doConfirm: function() {
+       if (op.buyStep == 1) {
+            
+            if (op.buyButtonIndex == 6) {
+                op.buyStep = 0;
+                op.buyButtonIndex = 0;
+                $("buy_layout").setAttribute("style", "display:none;");
+            } else {
+                 
+            $('buyChose').setAttribute('class', 'showHidden');
+            $('buyConfirm').setAttribute('class', '');
+            $('buyConfirmText').setAttribute('class', '');
+            $('buyConfirm').getElementsByTagName('li')[1].setAttribute('class', 'buy_active');
+            switch (op.buyButtonIndex) {
+                case 0:
+
+                case 1:
+                    buyTime = '一个月';
+                    break;
+                case 2:
+
+                case 3:
+                    buyTime = '一个季度';
+                    break;
+                case 4:
+
+                case 5:
+                    buyTime = '一年';
+
+                    break;
+            }
+            $('buyConfirmText').innerHTML = '请您确定订购数量：' + buyTime;
+                op.buyStep = 0;
+                op.btnConfirm =1;
+                op.setFocus();
+            }
+        } else if(op.btnConfirm ==1){
+            if(op.btnConfirmBtn == 1){
+                op.buyStep = 0;
+                op.buyButtonIndex = 0;
+                op.btnConfirm = 0;
+            $('buyChose').setAttribute('class', '');
+            $('buyConfirm').setAttribute('class', 'showHidden');
+            $('buyConfirmText').setAttribute('class', 'showHidden');
+            $("buy_layout").setAttribute("style", "display:none;");
+            } else {
+                console.log(op.buyButtonIndex);
+                switch (op.buyButtonIndex) {
+                case 0:
+                    op.reFreshBuy(1);
+                    break;
+                case 1:
+                    op.gotoWeixin(1);
+                    break;
+                case 2:
+                    op.reFreshBuy(3);
+                    break;
+                case 3:
+                    op.gotoWeixin(3);
+                    break;
+                case 4:
+                    op.reFreshBuy(12);
+                    break;
+                case 5:
+                    op.gotoWeixin(12);
+                    break;
+                default:
+                    showMsg("", "系统错误，请营业厅购买");
+                    break;
+            }
+            op.buyStep = 0;
+            op.buyButtonIndex = 0;
+            op.btnConfirm = 0;
+             $('buyChose').setAttribute('class', '');
+            $('buyConfirm').setAttribute('class', 'showHidden');
+            $('buyConfirmText').setAttribute('class', 'showHidden');
+            $("buy_layout").setAttribute("style", "display:none;");
+        }
+        } else {
+
+            if (op.area == 0) {
+                if (op.btnIndex == 1) {
+                    if (isCollected) {
+                        deleteBookmarksDetail();
+                        //op.showTip();
+                        //$("info").style.background = "url(images/cancel.png) no-repeat";
+                        //$("info").innerHTML = "已收藏";
+                    } else {
+                        addBookmarksDetail();
+                        //op.showTip();
+                        //$("info").style.background = "url(images/success.png) no-repeat";
+                        //$("info").innerHTML = "收藏";
+                    }
+                } else {
+                    if (isAccessOrder) {
+                        //alert("购买成功");
+                        vodPlay1();
+                    } else {
+                        
+                        $("buy_layout").setAttribute("style", "display:block;");
+                            //$("buy_layout").getElementsByTagName("h3")[0].innerHTML="账户余额为"+o.balance+"元，专区包月价格为"+o.price+"元";
+                        op.buyStep = 1;
+                        op.buyButtonIndex = 0; //焦点移动到订购页面
+                        op.setFocus();
+                    }
+
+                    // if(o.price > o.balance){
+                    //         $("buy_layout").getElementsByTagName("p")[0].innerHTML="余额不足，微信购买！";
+                    //     }else{
+                    //         $("buy_layout").getElementsByTagName("p")[0].innerHTML="马上购买！";
+                    //     }
+
+                }
+            }
+        }
+    },
+    setFocus: function() {
+        if (op.buyStep == 1) {
+            var objP = $("buy_layout").getElementsByTagName("li");
+            for (var i = 0; i < objP.length; i++) {
+                objP[i].className = '';
+            }
+            objP[op.buyButtonIndex].className = "buy_active";
+        } else if(op.btnConfirm ==1){
+            var objP = $("buyConfirm").getElementsByTagName("li");
+            for (var i = 0; i < objP.length; i++) {
+                objP[i].className = '';
+            }
+            objP[op.btnConfirmBtn].className = "buy_active";
+            $("buyConfirmText").setAttribute('class','');
+            $("buyConfirm").setAttribute('class','');
+            $("buyChose").setAttribute('class','showHidden');
+
+        }else {
+            if (op.area == 0) {
+                if (op.btnIndex == 0) {
+                    $('play').className = 'play';
+                    $('cang').className = '';
+                } else {
+                    $('play').className = '';
+                    $('cang').className = 'cang';
+                }
+            }
+        }
+
+    },
+}
+
+function moveRight() {
+    op.moveRight();
+}
+
+function moveLeft() {
+    op.moveLeft();
+}
+
+function moveDown() {
+    op.moveDown();
+}
+
+function moveUp() {
+
+    op.moveUp();
+}
+
+function doConfirm() {
+    op.doConfirm();
+}
+window.onload = function() {
+    console.log(folderAssetId);
+    getAssetDetail();
+    if(folderAssetId =='MANU0000000000233066')
+        authentication("MANU233066");
+    else
+        authentication("MANU228065");
+    queryBalance();
+    op.setFocus();
+}
+</script>
+
+</html>

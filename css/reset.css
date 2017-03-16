@@ -1,0 +1,35 @@
+@charset "utf-8";
+/*css reset*/
+body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,legend,input,button,textarea,p,blockquote,th,td{margin:0; padding:0;}
+/*以上元素的内外边距都设为0*/
+table{border-collapse:collapse; border-spacing:0;}
+/*合并表格边框，单元格的边框间距为0*/
+ol,ul{list-style:none;}/*隐藏列表符合*/
+fieldset,img {border:0;}
+textarea{resize:none;}/*文本区尺寸本不能调节*/
+input:focus,textarea:focus {outline:none}/*获得焦点时边框为0*/
+a{text-decoration:none;}
+a:hover{text-decoration:underline;}
+q:before, q:after{content:'';}/*去掉被引用内容的引号*/
+abbr, acronym{border:0; font-variant:normal;}
+/*网页中文字缩写为正常字体*/
+address,cite,dfn,optgroup,em,var{font-style:normal;}
+/*以上标签字体都设置为正常字体*/
+legend{color:#000;}
+
+/*文档及字体初始化*/
+body{
+	color:#000;
+	font-size:12px;
+    line-height: 22px;/*行间距*/
+    list-style: outside none none;
+    font-family:"宋体";
+}
+/*浮动清理设置*/
+.clear:after{
+    content: ".";
+    height: 0;
+    visibility: hidden;
+    display: block;
+    clear: both;
+}

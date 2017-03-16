@@ -1,0 +1,379 @@
+#hd-main {
+    height: 720px;
+    width: 1280px;
+    background: url('../img/bg.jpg') no-repeat;
+    position: relative;
+}
+
+#hd-head {
+    position: absolute;
+    width: 380px;
+    height: 130px;
+    left: 455px;
+    top: 105px;
+}
+#hd-buy{
+    width: 380px;
+    height: 81px;
+}
+#hd-buy img{
+    margin: 0 auto;
+    width: 75%;
+    height: 75%;
+    margin-top: 14px;
+    margin-left: 52px;
+}
+.focus {
+    background: url('../img/buy-focus.gif') no-repeat;
+}
+
+.blur {
+    background: url('../img/buy-blur.gif') no-repeat;
+}
+
+#hd-game-time {}
+
+#hd-game-time {
+    line-height: 30px;
+    font-size: 26px;
+    font-weight: bolder;
+    color: #cf0000;
+    margin-top: 12px;
+    padding-left: 151px;
+}
+
+#hd-game-time p {
+    text-align: center;
+}
+
+#hd-box {
+    position: absolute;
+    top: 345px;
+    bottom: 23px;
+    width: 1280px;
+    padding-top: 42px;
+}
+
+#hd-box-chose {
+    overflow: hidden;
+    margin: 0 auto;
+    width: 900px;
+}
+
+#hd-box-chose li {
+    width: 300px;
+    height: 300px;
+    float: left;
+}
+#hd-box-chose img{
+    margin-left: 100px;
+    margin-top: 116px;
+    display: none;
+}
+
+.hd-box-hover {
+    background: url('../img/hover.png') no-repeat;
+}
+
+.hd-box-open {
+    background: url('../img/open .png') no-repeat;
+}
+
+.hd-box-norm {
+    background: url('../img/norm.png') no-repeat;
+}
+
+
+/*#buy_layout*/
+
+.showHidden {
+    display: none;
+}
+
+#buyLayout {
+    width: 1280px;
+    height: 720px;
+    position: absolute;
+    background: url(../image/buy_bg.png) no-repeat;
+    z-index: 200;
+    text-align: center;
+}
+
+#buyLayout h3 {
+    padding-top: 224px;
+    margin-bottom: 15px;
+    margin-left: -200px;
+}
+
+#buyLayout ul {
+    width: 500px;
+    margin: 0px auto;
+}
+
+#buyLayout li {
+    height: 50px;
+    background: url(../image/button_bg_02.png) no-repeat center -105px;
+    width: 50%;
+    float: left;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.buyActive {
+    background-position: center -13px !important;
+}
+
+#buyConfirm {
+    margin-top: 85px !important;
+}
+
+#buyConfirm li {
+    line-height: 36px;
+}
+
+#buyConfirmText {
+    font: 20px bolder !important;
+}
+
+.new {
+    color: red;
+}
+
+.linethrough {
+    text-decoration: line-through;
+    color: red;
+}
+
+.old {
+    line-height: 16px;
+    display: block;
+    margin-top: 5px;
+}
+
+#last {
+    line-height: 45px !important;
+}
+
+#tip #innerWrap  #tipConfirm {
+    height: 60px;
+    width: 145px;
+    margin: 0 auto;
+}
+#tip #innerWrap #btn #tipCm {
+    height: 60px;
+    width: 145px;
+    float: left;
+}
+#tip #innerWrap #btn #tipCl{
+     height: 60px;
+    width: 145px;
+    float: right;
+}
+.btnCorrect{
+    margin: 0 0;
+    float: left;
+}
+#tip #innerWrap #btn{
+    height: 60px;
+    width: 380px;
+    margin: 0 auto;
+    overflow: hidden;
+}
+.tipBlur {
+    background: url(../common/img/y_button.png) 0 0 no-repeat;
+}
+
+.tipFocus {
+    background: url(../common/img/y_button_s.png) 0 0 no-repeat;
+}
+
+#tip #innerWrap {
+    //position: relative;
+    //top: 264px;
+    //left: 333px;
+    height: 214px;
+    width: 614px;
+}
+
+#tip #innerWrap #tipText {
+    text-align: center;
+    color: red;
+    font-weight: bolder;
+    font-size: 47px;
+    height: 175px;
+    width: 500px;
+    padding-top: 50px;
+    margin: 0 auto;
+}
+
+#tip {
+    position: absolute;
+    z-index: 200;
+    top: 0;
+    left: 0;
+    width: 1280px;
+    height: 720px;
+    display: -moz-box;
+    -moz-box-pack: center;
+    -moz-box-align: center;
+    display: -webkit-box;
+    -webkit-box-pack: center;
+    -webkit-box-align: center;
+    background: url('../img/xprize_y.png') no-repeat;
+    overflow: hidden;
+    display: box;
+    box-pack: center;
+    box-align: center;
+}
+
+.tipContent {
+    line-height: 50px;
+    text-align: center;
+    position: relative;
+    left: 129px;
+    top: 55px;
+}
+
+#timePopDiv {
+    top: 530px;
+    height: 80px;
+    width: 1280px;
+    position: absolute;
+    left: 0;
+    overflow: visible;
+    background: url(../common/img/timepop.png) no-repeat center;
+    z-index: 9999;
+}
+
+#timePopDiv #timepop {
+    width: 100%;
+    display: block;
+    position: relative;
+    text-align: center;
+    line-height: 80px;
+    font-size: 32px;
+    color: red;
+}
+
+#overlay {
+    position: absolute;
+    z-index: 200;
+    top: 0;
+    left: 0;
+    width: 1280px;
+    height: 720px;
+    display: -webkit-box;
+    -webkit-box-pack: center;
+    -webkit-box-align: center;
+}
+
+input {
+    background-color: transparent;
+    border: none;
+}
+
+#overlay #tipConfirm {
+    height: 60px;
+    width: 145px;
+    position: absolute;
+    top: 477px;
+    left: 500px;
+}
+#overlay #tipCancel{
+    height: 60px;
+    width: 145px;
+    position: absolute;
+    top: 477px;
+    left: 700px;
+}
+.tipBlurC {
+    background: url(../common/img/c_button.png) 0 0 no-repeat;
+}
+
+.tipFocusC {
+    background: url(../common/img/c_button_s.png) 0 0 no-repeat;
+}
+
+#overlay.pop #tel_pop .tipCon {
+    top: 45px;
+    height: 100px;
+    color: #4d4943;
+    line-height: 33px;
+}
+
+#overlay.pop #tel_pop {
+    width: 430px;
+}
+
+#overlay.pop #tel_pop .inputBox {
+    width: 360px;
+    height: 40px;
+    background: center no-repeat;
+   
+   position: absolute;
+   left: 572px;
+   top:418px;
+}
+
+#overlay.pop #tel_pop input {
+    width: 110px;
+    height: 40px;
+    line-height:40px;
+    padding-left: 17px;
+    background: ;
+    margin: 3px 0 22px -5px;
+    color: #000;
+    font-size: 34px;
+    letter-spacing: 1px;
+}
+
+#overlay.pop #tel_pop input.num1 {
+    width: 86px;
+    padding-left: 17px;
+    margin-left: 10px;
+}
+
+#overlay.pop #tel_pop input.num2 {
+    background:
+}
+
+#overlay.pop #tel_pop input.num3 {
+    background:
+}
+
+#overlay.pop #tel_pop button {
+    background: url(raffle/pop_btn.png) no-repeat;
+    margin-top: 28px;
+}
+
+#overlay.pop #tel_pop button.hover {
+    background: url(raffle/pop_btn_fo.png) center no-repeat;
+}
+
+.tipWrap button {
+    height: 60px;
+    width: 145px;
+    margin: 140px 10px 0;
+    overflow: hidden;
+    font-size: 18px;
+    background: url("comm/imgs/button_aa.png") no-repeat;
+}
+
+#telText {
+    //padding-left: 22px;
+    position: absolute;
+    text-align: center;
+    top: 283px;
+    font-weight: bolder;
+    font-size: 47px;
+    height: 76px;
+    width: 365px;
+    left: 585px;
+    //padding-top: 65px;
+    //margin: 0 auto;
+}
+
+#telText .tipCon {
+    color: red !important;
+    
+}
