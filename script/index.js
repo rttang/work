@@ -331,8 +331,8 @@ var PortFun = {
     },
     saveGlobals: function() {
         //返回后想获得原来的焦点，首先得知道一级导航和二级导航是谁
-        PortFun.curPage = $("pageNow").innerText;//修正页码
-        PortFun.startAt = PortFun.curPage * PortFun.dataSize - 11;//修正个数
+        PortFun.curPage = $("pageNow").innerText; //修正页码
+        PortFun.startAt = PortFun.curPage * PortFun.dataSize - 11; //修正个数
         setGlobalVar("current_Name", currentBtn['myName']);
         setGlobalVar("currNav_Num", PortFun.currNavNum);
         //setGlobalVar("curr_Tag", PortFun.currTag);
@@ -398,6 +398,7 @@ var PortFun = {
 var Strategies = {
     nav: function(liNum, direction) {
         var navUl = $('nav');
+        var nwo = $('navWrapperOut');
         var navList = navUl.childNodes;
         var navLi = [];
         var currentName = 'nav_' + liNum;
@@ -441,7 +442,7 @@ var Strategies = {
                 {
                     navBar.setAttribute('style', 'height:110px');
                     navSecondUl.className = '';
-                    creatLi('navSecondContent', '最新,欧美剧,韩剧');
+                    creatLi('navSecondContent', '最新,跟播剧,欧美剧');
 
                     navSecondUl.getElementsByTagName('li')[0].setAttribute('class', '');
                     change(currentName, { down: 'navSecondContent_0' })
@@ -536,8 +537,8 @@ var Strategies = {
         for (var j = 0; j < navLi.length; j++)
             navLi[j].className = '';
         navLi[liNum].className = 'wordAction';
-        navUl.className = '';
-        navUl.className = 'nav' + liNum;
+        nwo.className = '';
+        nwo.className = 'nav' + liNum;
     }, //nav  end
     navSecondContent: function(liNum, direction) {
             liNum = parseInt(liNum);
@@ -761,7 +762,7 @@ var btnConfirm = {
         saveUrlPath();
         PortFun.saveGlobals();
         if (liNum == 0) {
-          if (isAccessOrder) { //如果购买过产品
+            if (isAccessOrder) { //如果购买过产品
                 showMsg("", "您已经购买过该产品！");
                 change('buyCollect_0', { confirm: null }); //修正按钮
                 bcLi[0].setAttribute('class', 'buyCollectFocus')
@@ -1070,7 +1071,7 @@ groupGenerate('buyConfirm', { left: null, right: null, up: null, down: null, con
  */
 function moveRight() {
     //console.log(currentBtn);
-    if (!judge) return;
+    //if (!judge) return;
     if (!btnAssert(currentBtn, 'right'))
         keyAction('right', Strategies);
 }
@@ -1099,67 +1100,68 @@ function doConfirm() {
         currentBtn = find(currentBtn['confirm']); //修正
     //console.log('123', currentBtn);
 }
-var $Path = {//路径处理
-    _globalName : 'urlPathGlobalName',//此处不能修改，全部用统一的名字
-    _splitChar : '#',
-    _get : function(){
-        this.cookie = getGlobalVar(this._globalName) == undefined ? "" : getGlobalVar(this._globalName);//取机顶盒cookie
+var $Path = { //路径处理
+    _globalName: 'urlPathGlobalName', //此处不能修改，全部用统一的名字
+    _splitChar: '#',
+    _get: function() {
+        this.cookie = getGlobalVar(this._globalName) == undefined ? "" : getGlobalVar(this._globalName); //取机顶盒cookie
         this.urlArr = this.cookie.split(this._splitChar);
     },
-    _wr : function(){//写入中间件cookie
+    _wr: function() { //写入中间件cookie
         this.cookie = this.urlArr.join(this._splitChar);
-        setGlobalVar(this._globalName, this.cookie);//保存
+        setGlobalVar(this._globalName, this.cookie); //保存
     },
-    last : function(){
+    last: function() {
         this._get();
-        return this.urlArr[this.urlArr.length-1];
+        return this.urlArr[this.urlArr.length - 1];
     },
-    mod : function(){//处理当前地址（加入焦点位置，页码，等参数）
-//如：当前地址为：http://10.69.2.31/list.html，焦点位置index为2，页码p为3
-//保存路径之前，在此加上url参数http://10.69.2.31/list.html?index=2&p=3
-//如不需要处理当前地址，直接返回location.href
+    mod: function() { //处理当前地址（加入焦点位置，页码，等参数）
+        //如：当前地址为：http://10.69.2.31/list.html，焦点位置index为2，页码p为3
+        //保存路径之前，在此加上url参数http://10.69.2.31/list.html?index=2&p=3
+        //如不需要处理当前地址，直接返回location.href
         this.url = '';
         return this.url;
     },
-    sav : function(){
+    sav: function() {
         this._get();
         var urlArr = this.urlArr;
-        try{//如果最后一条地址和当前地址相同，则删除最后一条，避免重复保存
-            if(urlArr[urlArr.length-1].match(/.*(?=\?)/)[0] == location.href.match(/.*(?=\?)/)[0])
+        try { //如果最后一条地址和当前地址相同，则删除最后一条，避免重复保存
+            if (urlArr[urlArr.length - 1].match(/.*(?=\?)/)[0] == location.href.match(/.*(?=\?)/)[0])
                 urlArr.pop();
-        }catch(e){
-            if(urlArr[urlArr.length-1] == location.href)
+        } catch (e) {
+            if (urlArr[urlArr.length - 1] == location.href)
                 urlArr.pop()
         };
         this.mod();
-        urlArr.push(this.url);//将修改后的当前地址放入数组末尾
-        if(urlArr.length > 6) {//最多保留7条路径
-            var newArr = urlArr.slice(urlArr.length - 6);//从指定位置截取数组
-            this.urlArr = urlArr[1].concat(newArr);//保留原来数组中第一个路径（portal进入的路径）
+        urlArr.push(this.url); //将修改后的当前地址放入数组末尾
+        if (urlArr.length > 6) { //最多保留7条路径
+            var newArr = urlArr.slice(urlArr.length - 6); //从指定位置截取数组
+            this.urlArr = urlArr[1].concat(newArr); //保留原来数组中第一个路径（portal进入的路径）
         }
         this._wr();
     },
-    back : function(){//返回前一路径
+    back: function() { //返回前一路径
         this._get();
         var href = this.urlArr.pop();
         this._wr();
-        if (!href||href=='') {
+        if (!href || href == '') {
             this.home();
         }
         location.href = href;
-        if(getQueryStr(location.href,"from")=="dvbplayer"){//频道混排
+        if (getQueryStr(location.href, "from") == "dvbplayer") { //频道混排
             Utility.ioctlWrite("START_APP", "PackageName:com.coship.guizhou.dvb");
         }
     },
-    home : function(){
+    home: function() {
         this.clear();
-        Utility.setEnv("portal_Form","");
+        Utility.setEnv("portal_Form", "");
         location.href = getGlobalVar("PORTAL_ADDR");
     },
-    clear : function(){//清除所有路径
+    clear: function() { //清除所有路径
         setGlobalVar(this._globalName, '');
     }
 };
+
 function getPrevPath() { //从机顶盒变量或浏览器cookie中获取前一路径，前一页面需要saveUrlPath
     var tempUrl = getGlobalVar(urlPathGlobalName);
     if (tempUrl == undefined || tempUrl == "") return "";
@@ -1171,18 +1173,19 @@ function getPrevPath() { //从机顶盒变量或浏览器cookie中获取前一�
     }
     return tul;
 };
+
 function doReturnKey() {
-    
-        setGlobalVar("isBack", "Y"); //页面返回标示，Y如果是从其他页面返回到当前页则取保存的机顶盒变量
-        //clearGlobalVar();
-   var result = getPrevPath();
-    if(result.indexOf('hd')==-1){
+
+    setGlobalVar("isBack", "Y"); //页面返回标示，Y如果是从其他页面返回到当前页则取保存的机顶盒变量
+    //clearGlobalVar();
+    var result = getPrevPath();
+    if (result.indexOf('hd') == -1) {
         goReturnUrlPath();
-    }else{
-       window.location.href = getGlobalVar("PORTAL_ADDR");
+    } else {
+        window.location.href = getGlobalVar("PORTAL_ADDR");
     }
-        return false;
-    
+    return false;
+
 }
 var timer = "";
 
@@ -1226,8 +1229,8 @@ function doNumberKey(num, start) {
             }
             $("pagenumber").innerHTML = "输入页面自动跳转";
             var arr = wordDismantle(currentBtn['myName'])
-           // console.log('myName', currentBtn['myName'])
-            //console.log('arr[0]', arr[0]);
+                // console.log('myName', currentBtn['myName'])
+                //console.log('arr[0]', arr[0]);
             if (arr[0] == 'secondShowContent') {
                 setFocus(find('secondShowContent_0'));
                 currentBtn = find('secondShowContent_0');

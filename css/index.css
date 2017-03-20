@@ -78,22 +78,31 @@ test
     padding-top: 20px;
 }
 
-#nav {
-    float: left;
-}
 
 #navBar #logo {
     position: absolute;
     z-index: -1;
     left: 40px;
 }
-
+#navWrapperOut{
+    float: left;
+    overflow: hidden;
+    height: 67px;
+    width: 900px;
+    padding-left: 140px;
+}
+#navWrapperInner{
+    overflow: hidden;
+    height: 67px;
+    width: 900px;
+    position: relative;
+}
 #navBar #nav {
     height: 67px;
-    width: 895px;
-    padding-left: 140px;
+    width: 1015px;
+    position: absolute;
+    left: 0px;
     overflow: hidden;
-    margin-left: 25px;
 }
 
 #navBar #nav li {
@@ -106,29 +115,34 @@ test
     font-size: 22px !important;
     font-family: '微软雅黑', '宋体' !important;
 }
-
+.navLeft {
+    background: url('../image/navLeft.gif') no-repeat ;
+}
+.navRight {
+    background: url('../image/navRight.gif') no-repeat 882px;
+}
 .nav0 {
     background: url('../image/navChose.png') no-repeat -18px;
 }
 
 .nav1 {
-    background: url('../image/navChose.png') no-repeat 118px;
+    background: url('../image/navChose.png') no-repeat 125px;
 }
 
 .nav2 {
-    background: url('../image/navChose.png') no-repeat 270px;
+    background: url('../image/navChose.png') no-repeat 275px;
 }
 
 .nav3 {
-    background: url('../image/navChose.png') no-repeat 410px;
+    background: url('../image/navChose.png') no-repeat 430px;
 }
 
 .nav4 {
-    background: url('../image/navChose.png') no-repeat 560px;
+    background: url('../image/navChose.png') no-repeat 580px;
 }
 
 .nav5 {
-    background: url('../image/navChose.png') no-repeat 714px;
+    background: url('../image/navChose.png') no-repeat 735px;
 }
 
 .wordAction {
